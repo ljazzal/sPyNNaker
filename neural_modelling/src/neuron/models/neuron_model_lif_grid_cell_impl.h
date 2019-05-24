@@ -34,6 +34,11 @@ typedef struct neuron_t {
 
     // refractory time of neuron [timesteps]
     int32_t  T_refract;
+
+    // directional preference of neuron
+    // 1: N, 2: S, 3: W, 4: E
+    int32_t dir_pref;
+
 } neuron_t;
 
 typedef struct global_neuron_params_t {

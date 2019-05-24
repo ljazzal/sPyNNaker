@@ -12,6 +12,7 @@ I_OFFSET = "i_offset"
 I_VEL = "i_vel"
 V_RESET = "v_reset"
 TAU_REFRAC = "tau_refrac"
+DIR_PREF = "dir_pref"
 COUNT_REFRAC = "count_refrac"
 
 UNITS = {
@@ -22,7 +23,8 @@ UNITS = {
     I_OFFSET: 'nA',
     I_VEL: 'nA',
     V_RESET: 'mV',
-    TAU_REFRAC: 'ms'
+    TAU_REFRAC: 'ms',
+    DIR_PREF: '',
 }
 
 
@@ -35,10 +37,11 @@ class NeuronModelLeakyIntegrateAndFireGridCell(AbstractNeuronModel):
         "_i_offset",
         "_i_vel",
         "_v_reset",
-        "_tau_refrac"]
+        "_tau_refrac",
+        "_dir_pref"]
 
     def __init__(
-            self, v_init, v_rest, tau_m, cm, i_offset, i_vel, v_reset, tau_refrac):
+            self, v_init, v_rest, tau_m, cm, i_offset, i_vel, v_reset, tau_refrac, dir_pref):
         super(NeuronModelLeakyIntegrateAndFireGridCell, self).__init__(
             [DataType.S1615,   # v
              DataType.S1615,   # v_rest
@@ -48,7 +51,8 @@ class NeuronModelLeakyIntegrateAndFireGridCell(AbstractNeuronModel):
              DataType.S1615,   # i_vel
              DataType.INT32,   # count_refrac
              DataType.S1615,   # v_reset
-             DataType.INT32])  # tau_refrac
+             DataType.INT32,   # tau_refrac
+             DataType.INT8])   # dir_pref
 
         if v_init is None:
             v_init = v_rest
@@ -60,6 +64,7 @@ class NeuronModelLeakyIntegrateAndFireGridCell(AbstractNeuronModel):
         self._i_vel = i_vel
         self._v_reset = v_reset
         self._tau_refrac = tau_refrac
+        self._dir_pref = dir_pref
 
     @overrides(AbstractNeuronModel.get_n_cpu_cycles)
     def get_n_cpu_cycles(self, n_neurons):
@@ -75,6 +80,7 @@ class NeuronModelLeakyIntegrateAndFireGridCell(AbstractNeuronModel):
         parameters[V_RESET] = self._v_reset
         parameters[TAU_REFRAC] = self._tau_refrac
         parameters[I_VEL] = self._i_vel
+        parameters[DIR_PREF] = self._dir_pref
 
     @overrides(AbstractNeuronModel.add_state_variables)
     def add_state_variables(self, state_variables):
@@ -103,14 +109,15 @@ class NeuronModelLeakyIntegrateAndFireGridCell(AbstractNeuronModel):
                 state_variables[COUNT_REFRAC],
                 parameters[V_RESET],
                 parameters[TAU_REFRAC].apply_operation(
-                    operation=lambda x: int(numpy.ceil(x / (ts / 1000.0))))]
+                    operation=lambda x: int(numpy.ceil(x / (ts / 1000.0)))),
+                parameters[DIR_PREF]]
 
     @overrides(AbstractNeuronModel.update_values)
     def update_values(self, values, parameters, state_variables):
 
         # Read the data
         (v, _v_rest, _r_membrane, _exp_tc, _i_offset, _i_vel, count_refrac,
-         _v_reset, _tau_refrac) = values
+         _v_reset, _tau_refrac, _dir_pref) = values
 
         # Copy the changed data only
         state_variables[V] = v
@@ -179,3 +186,11 @@ class NeuronModelLeakyIntegrateAndFireGridCell(AbstractNeuronModel):
     @tau_refrac.setter
     def tau_refrac(self, tau_refrac):
         self._tau_refrac = tau_refrac
+
+    @property
+    def dir_pref(self):
+        return self._dir_pref
+
+    @dir_pref.setter
+    def dir_pref(self, dir_pref):
+        self._dir_pref = dir_pref
