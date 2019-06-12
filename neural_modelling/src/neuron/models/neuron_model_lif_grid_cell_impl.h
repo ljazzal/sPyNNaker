@@ -23,8 +23,8 @@ typedef struct neuron_t {
     // offset current [nA]
     REAL     I_offset;
 
-    // Velocity dependent current
-    REAL     I_vel;
+    // Velocity drive current to couple translation of network activity with motion of agent
+    REAL     I_vel_drive;
 
     // countdown to end of next refractory period [timesteps]
     int32_t  refract_timer;
@@ -35,9 +35,8 @@ typedef struct neuron_t {
     // refractory time of neuron [timesteps]
     int32_t  T_refract;
 
-    // directional preference of neuron
-    // 1: N, 2: S, 3: W, 4: E
-    int32_t dir_pref;
+    // directional preference of neuron [radians]
+    REAL dir_pref;
 
 } neuron_t;
 

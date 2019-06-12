@@ -40,11 +40,14 @@ state_t neuron_model_state_update(
 			total_inh += inh_input[i];
 		}
 
-		// Could compute I_vel here, prior to summing input
+		// Compute velocity-dependent current I_vel
+		// m: speed of agent in m/s
+		// x: x,y position of postsynaptic neuron
+        REAL i_vel = neuron->I_vel_drive;
 
         // Get the input in nA
         input_t input_this_timestep =
-            total_exc - total_inh + external_bias + neuron->I_offset + neuron->I_vel;
+            total_exc - total_inh + external_bias + neuron->I_offset + i_vel;
 
         _lif_neuron_closed_form(
             neuron, neuron->V_membrane, input_this_timestep);
@@ -78,7 +81,9 @@ void neuron_model_print_parameters(restrict neuron_pointer_t neuron) {
     log_debug("V rest        = %11.4k mv", neuron->V_rest);
 
     log_debug("I offset      = %11.4k nA", neuron->I_offset);
+    log_debug("I velocity drive      = %11.4k nA", neuron->I_vel_drive);
     log_debug("R membrane    = %11.4k Mohm", neuron->R_membrane);
+    log_debug("Directional preference      = %11.4k radians", neuron->dir_pref);
 
     log_debug("exp(-ms/(RC)) = %11.4k [.]", neuron->exp_TC);
 

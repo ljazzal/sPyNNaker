@@ -9,7 +9,7 @@ V_REST = "v_rest"
 TAU_M = "tau_m"
 CM = "cm"
 I_OFFSET = "i_offset"
-I_VEL = "i_vel"
+I_VEL_DRIVE = "i_vel_drive"
 V_RESET = "v_reset"
 TAU_REFRAC = "tau_refrac"
 DIR_PREF = "dir_pref"
@@ -21,10 +21,10 @@ UNITS = {
     TAU_M: 'ms',
     CM: 'nF',
     I_OFFSET: 'nA',
-    I_VEL: 'nA',
+    I_VEL_DRIVE: 'nA',
     V_RESET: 'mV',
     TAU_REFRAC: 'ms',
-    DIR_PREF: '',
+    DIR_PREF: 'radians',
 }
 
 
@@ -35,24 +35,24 @@ class NeuronModelLeakyIntegrateAndFireGridCell(AbstractNeuronModel):
         "_tau_m",
         "_cm",
         "_i_offset",
-        "_i_vel",
+        "_i_vel_drive",
         "_v_reset",
         "_tau_refrac",
         "_dir_pref"]
 
     def __init__(
-            self, v_init, v_rest, tau_m, cm, i_offset, i_vel, v_reset, tau_refrac, dir_pref):
+            self, v_init, v_rest, tau_m, cm, i_offset, i_vel_drive, v_reset, tau_refrac, dir_pref):
         super(NeuronModelLeakyIntegrateAndFireGridCell, self).__init__(
             [DataType.S1615,   # v
              DataType.S1615,   # v_rest
              DataType.S1615,   # r_membrane (= tau_m / cm)
              DataType.S1615,   # exp_tc (= e^(-ts / tau_m))
              DataType.S1615,   # i_offset
-             DataType.S1615,   # i_vel
+             DataType.S1615,   # i_vel_drive
              DataType.INT32,   # count_refrac
              DataType.S1615,   # v_reset
              DataType.INT32,   # tau_refrac
-             DataType.INT8])   # dir_pref
+             DataType.S1615])   # dir_pref
 
         if v_init is None:
             v_init = v_rest
@@ -61,7 +61,7 @@ class NeuronModelLeakyIntegrateAndFireGridCell(AbstractNeuronModel):
         self._tau_m = tau_m
         self._cm = cm
         self._i_offset = i_offset
-        self._i_vel = i_vel
+        self._i_vel_drive = i_vel_drive
         self._v_reset = v_reset
         self._tau_refrac = tau_refrac
         self._dir_pref = dir_pref
@@ -79,7 +79,7 @@ class NeuronModelLeakyIntegrateAndFireGridCell(AbstractNeuronModel):
         parameters[I_OFFSET] = self._i_offset
         parameters[V_RESET] = self._v_reset
         parameters[TAU_REFRAC] = self._tau_refrac
-        parameters[I_VEL] = self._i_vel
+        parameters[I_VEL_DRIVE] = self._i_vel_drive
         parameters[DIR_PREF] = self._dir_pref
 
     @overrides(AbstractNeuronModel.add_state_variables)
@@ -105,7 +105,7 @@ class NeuronModelLeakyIntegrateAndFireGridCell(AbstractNeuronModel):
                 parameters[TAU_M].apply_operation(
                     operation=lambda x: numpy.exp(float(-ts) / (1000.0 * x))),
                 parameters[I_OFFSET],
-                parameters[I_VEL],
+                parameters[I_VEL_DRIVE],
                 state_variables[COUNT_REFRAC],
                 parameters[V_RESET],
                 parameters[TAU_REFRAC].apply_operation(
@@ -116,7 +116,7 @@ class NeuronModelLeakyIntegrateAndFireGridCell(AbstractNeuronModel):
     def update_values(self, values, parameters, state_variables):
 
         # Read the data
-        (v, _v_rest, _r_membrane, _exp_tc, _i_offset, _i_vel, count_refrac,
+        (v, _v_rest, _r_membrane, _exp_tc, _i_offset, _i_vel_drive, count_refrac,
          _v_reset, _tau_refrac, _dir_pref) = values
 
         # Copy the changed data only
@@ -165,11 +165,11 @@ class NeuronModelLeakyIntegrateAndFireGridCell(AbstractNeuronModel):
 
     @property
     def i_vel(self):
-        return self._i_vel
+        return self._i_vel_drive
 
     @i_offset.setter
-    def i_vel(self, i_vel):
-        self._i_vel = i_vel
+    def i_vel(self, i_vel_drive):
+        self._i_vel_drive = i_vel_drive
 
     @property
     def v_reset(self):
