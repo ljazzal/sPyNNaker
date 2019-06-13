@@ -79,13 +79,9 @@ void neuron_model_print_state_variables(restrict neuron_pointer_t neuron) {
 void neuron_model_print_parameters(restrict neuron_pointer_t neuron) {
     log_debug("V reset       = %11.4k mv", neuron->V_reset);
     log_debug("V rest        = %11.4k mv", neuron->V_rest);
-
     log_debug("I offset      = %11.4k nA", neuron->I_offset);
     log_debug("I velocity drive      = %11.4k nA", neuron->I_vel_drive);
     log_debug("R membrane    = %11.4k Mohm", neuron->R_membrane);
-    log_debug("Directional preference      = %11.4k radians", neuron->dir_pref);
-
     log_debug("exp(-ms/(RC)) = %11.4k [.]", neuron->exp_TC);
-
     log_debug("T refract     = %u timesteps", neuron->T_refract);
 }
