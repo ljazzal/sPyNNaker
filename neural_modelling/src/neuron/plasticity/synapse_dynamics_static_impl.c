@@ -22,6 +22,16 @@ address_t synapse_dynamics_initialise(
 }
 
 //---------------------------------------
+void synapse_dynamics_process_neuromodulator_event(
+         uint32_t time, int32_t concentration, uint32_t neuron_index,
+     uint32_t synapse_type) {
+    use(time);
+    use(concentration);
+    use(neuron_index);
+    use(synapse_type);
+}
+
+//---------------------------------------
 void synapse_dynamics_process_post_synaptic_event(
         uint32_t time, index_t neuron_index) {
     use(time);

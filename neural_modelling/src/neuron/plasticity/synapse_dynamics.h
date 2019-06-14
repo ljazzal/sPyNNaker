@@ -13,6 +13,10 @@ bool synapse_dynamics_process_plastic_synapses(
     address_t plastic_region_address, address_t fixed_region_address,
     weight_t *ring_buffers, uint32_t time);
 
+void synapse_dynamics_process_neuromodulator_event(
+        uint32_t time, int32_t concentration, uint32_t neuron_index,
+        uint32_t synapse_type);
+
 void synapse_dynamics_process_post_synaptic_event(
     uint32_t time, index_t neuron_index);
 

@@ -27,17 +27,20 @@ class SynapseDynamicsSTDP(
         "_timing_dependence",
         # weight dependence to use for the STDP rule
         "_weight_dependence",
+        # Defines whether neuromodulation is on
+        "_neuromodulation",
         # padding to add to a synaptic row for synaptic rewiring
         "_pad_to_length"]
 
     def __init__(
             self, timing_dependence=None, weight_dependence=None,
             voltage_dependence=None, dendritic_delay_fraction=1.0,
-            pad_to_length=None):
+            pad_to_length=None, neuromodulation=False):
         self._timing_dependence = timing_dependence
         self._weight_dependence = weight_dependence
         self._dendritic_delay_fraction = float(dendritic_delay_fraction)
         self._change_requires_mapping = True
+        self._neuromodulation = neuromodulation
         self._pad_to_length = pad_to_length
 
         if not (0.5 <= self._dendritic_delay_fraction <= 1.0):
@@ -126,6 +129,10 @@ class SynapseDynamicsSTDP(
         return False
 
     def get_vertex_executable_suffix(self):
+        # For neuromodulation binary name is set completely in the build
+        # as it is not using standard weight and timing dependence
+        if self._neuromodulation:
+            return ""
         name = "_stdp_mad"
         name += "_" + self._timing_dependence.vertex_executable_suffix
         name += "_" + self._weight_dependence.vertex_executable_suffix
