@@ -173,9 +173,9 @@ class SynapseDynamicsStructuralCommon(AbstractSynapseDynamicsStructural):
         self.__manager = {}
 
     def set_projection_parameter(self, projection, param, value):
-        if value not in self._manager.keys():
-            self._manager[projection] = {}
-        self._manager[projection][param] = value
+        if value not in self.__manager.keys():
+            self.__manager[projection] = {}
+        self.__manager[projection][param] = value
 
     @property
     def weight_dynamics(self):
@@ -364,11 +364,11 @@ class SynapseDynamicsStructuralCommon(AbstractSynapseDynamicsStructural):
         # Generate a seed for the RNG on chip that is the same for all
         # of the cores that have perform structural updates.
         # NOTE: it should be different between application vertices
-        if app_vertex not in self._seeds.keys():
+        if app_vertex not in self.__seeds.keys():
             self.__seeds[app_vertex] = \
                 [self.__rng.randint(0x7FFFFFFF) for _ in range(4)]
-        spec.write_value(data=int(self._s_max))
-        spec.write_value(data=int(self._lateral_inhibition),
+        spec.write_value(data=int(self.__s_max))
+        spec.write_value(data=int(self.__lateral_inhibition),
                          data_type=DataType.INT32)
         spec.write_value(data=int(self.__random_partner),
                          data_type=DataType.INT32)
@@ -447,9 +447,9 @@ class SynapseDynamicsStructuralCommon(AbstractSynapseDynamicsStructural):
                 for synapse_info in app_edge.synapse_information:
                     if synapse_info.synapse_dynamics is self.__weight_dynamics:
                         exception_case = None
-                        for mek in self._manager.keys():
+                        for mek in self.__manager.keys():
                             if app_edge == mek._projection_edge:
-                                exception_case = self._manager[mek]
+                                exception_case = self.__manager[mek]
                                 break
                         structural_application_edges.append(app_edge)
 
@@ -466,7 +466,7 @@ class SynapseDynamicsStructuralCommon(AbstractSynapseDynamicsStructural):
         for machine_edge in machine_graph.get_edges_ending_at_vertex(
                 machine_vertex):
             if isinstance(machine_edge, ProjectionMachineEdge):
-                for synapse_info in machine_edge._synapse_information:
+                for synapse_info in machine_edge.synapse_information:
                     if synapse_info.synapse_dynamics is self.__weight_dynamics:
                         structural_machine_edges.append(machine_edge)
                         # For each structurally plastic MACHINE edge find the
@@ -579,15 +579,15 @@ class SynapseDynamicsStructuralCommon(AbstractSynapseDynamicsStructural):
                 spec.write_value(data=int(delay_hi), data_type=DataType.UINT16)
             else:
                 # the current connection has the default delay distribution
-                if isinstance(self._initial_delay, collections.Iterable):
-                    spec.write_value(data=int(self._initial_delay[0]),
+                if isinstance(self.__initial_delay, collections.Iterable):
+                    spec.write_value(data=int(self.__initial_delay[0]),
                                      data_type=DataType.UINT16)
-                    spec.write_value(data=int(self._initial_delay[1]),
+                    spec.write_value(data=int(self.__initial_delay[1]),
                                      data_type=DataType.UINT16)
                 else:
-                    spec.write_value(data=self._initial_delay,
+                    spec.write_value(data=self.__initial_delay,
                                      data_type=DataType.UINT16)
-                    spec.write_value(data=self._initial_delay,
+                    spec.write_value(data=self.__initial_delay,
                                      data_type=DataType.UINT16)
 
             if (exceptions and self.connectivity_exception_param.weight
@@ -603,7 +603,7 @@ class SynapseDynamicsStructuralCommon(AbstractSynapseDynamicsStructural):
                 # scale the exception weight according to the
                 # appropriate weight scale
                 spec.write_value(
-                    data=int(round(self._initial_weight *
+                    data=int(round(self.__initial_weight *
                                    weight_scales[int(syn_type)])))
 
             # Write connection type
@@ -758,7 +758,7 @@ class SynapseDynamicsStructuralCommon(AbstractSynapseDynamicsStructural):
         """
         relevant_edges = []
         for edge in machine_in_edges:
-            for synapse_info in edge._synapse_information:
+            for synapse_info in edge.synapse_information:
                 if synapse_info.synapse_dynamics is self.__weight_dynamics:
                     relevant_edges.append(edge)
         return int(self.__fudge_factor * 4 * 12 * len(relevant_edges))
