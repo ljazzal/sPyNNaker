@@ -41,13 +41,23 @@ state_t neuron_model_state_update(
 		}
 
 		// Compute velocity-dependent current I_vel
-		// m: speed of agent in m/s
+		// Dot product position and speed
+		// m: velocity of agent in m/s
 		// x: x,y position of postsynaptic neuron
-        REAL i_vel = neuron->I_vel_drive;
+//		REAL [2] dir = {0, 1.0};
+//		REAL speed = 1.0;
+//		REAL dot_prod_pos_speed = 0;
+//        REAL i = 0;
+//
+//        for (i = 0; i < 2; i++) {
+//                dot_prod_pos_speed += speed[i] * neuron->position[i];
+//        }
+
+//        REAL i_vel = neuron->I_vel_drive * (speed * );
 
         // Get the input in nA
         input_t input_this_timestep =
-            total_exc - total_inh + external_bias + neuron->I_offset + i_vel;
+            total_exc - total_inh + external_bias + neuron->I_offset;
 
         _lif_neuron_closed_form(
             neuron, neuron->V_membrane, input_this_timestep);
