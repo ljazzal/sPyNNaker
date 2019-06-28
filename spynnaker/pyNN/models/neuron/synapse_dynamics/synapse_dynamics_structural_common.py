@@ -177,10 +177,6 @@ class SynapseDynamicsStructuralCommon(AbstractSynapseDynamicsStructural):
             self.__manager[projection] = {}
         self.__manager[projection][param] = value
 
-    @property
-    def weight_dynamics(self):
-        return self.__weight_dynamics
-
     def get_parameter_names(self):
         names = ['initial_weight', 'initial_delay', 'f_rew', 's_max',
                  'lateral_inhibition',
@@ -866,3 +862,47 @@ class SynapseDynamicsStructuralCommon(AbstractSynapseDynamicsStructural):
                            synapse_dynamics.p_form_lateral) and
                 np.isclose(self.__p_elim_dep, synapse_dynamics.p_elim_dep) and
                 np.isclose(self.__p_elim_pot, synapse_dynamics.p_elim_pot))
+
+    @property
+    def weight_dynamics(self):
+        return self.__weight_dynamics
+
+    @property
+    def f_rew(self):
+        return self.__f_rew
+
+    @property
+    def s_max(self):
+        return self.__s_max
+
+    @property
+    def sigma_form_forward(self):
+        return self.__sigma_form_forward
+
+    @property
+    def sigma_form_lateral(self):
+        return self.__sigma_form_lateral
+
+    @property
+    def p_elim_dep(self):
+        return self.__p_elim_dep
+
+    @property
+    def p_elim_pot(self):
+        return self.__p_elim_pot
+
+    @property
+    def p_form_forward(self):
+        return self.__p_form_forward
+
+    @property
+    def p_form_lateral(self):
+        return self.__p_form_lateral
+
+    @property
+    def sigma_form_forward(self):
+        return self.__sigma_form_forward
+
+    @property
+    def sigma_form_lateral(self):
+        return self.__sigma_form_lateral
