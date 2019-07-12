@@ -51,7 +51,7 @@ typedef enum extra_provenance_data_region_entries{
 
 //! values for the priority for each callback
 typedef enum callback_priorities{
-    MC = -1, TIMER = 0, DMA = 0, USER = 0, SDP = 1
+    MC = -1, TIMER = 0, DMA = 1, USER = 0, SDP = 1
 } callback_priorities;
 
 //! The number of regions that are to be used for recording
@@ -123,6 +123,7 @@ void write_contributions(uint unused1, uint unused2) {
 
         uint32_t state = spin1_int_disable();
 
+
         cb_calls++;
 
 //        volatile uint32_t temp = tc[T1_COUNT];
@@ -142,6 +143,7 @@ void write_contributions(uint unused1, uint unused2) {
         }
 
         spin1_mode_restore(state);
+
 }
 
 //! \brief Initialises the model by reading in the regions and checking
@@ -222,8 +224,7 @@ static bool initialise(uint32_t *timer_period) {
     }
 
     if (!spike_processing_initialise(
-            row_max_n_words, MC, USER,
-            incoming_spike_buffer_size)) {
+            row_max_n_words, MC, incoming_spike_buffer_size)) {
         return false;
     }
 
