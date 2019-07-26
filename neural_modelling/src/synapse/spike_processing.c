@@ -77,10 +77,10 @@ void _setup_synaptic_dma_read() {
     address_t row_address;
     size_t n_bytes_to_transfer;
 
-    bool setup_done = false;
-    bool finished = false;
+//    bool setup_done = false;
+//    bool finished = false;
     uint cpsr = 0;
-    while (!setup_done && !finished) {
+//    while (!setup_done && !finished) {
 //        if (number_of_rewires) {
 //            number_of_rewires--;
 //            synaptogenesis_dynamics_rewire(time);
@@ -102,7 +102,8 @@ void _setup_synaptic_dma_read() {
 
         // If there's more incoming spikes
         cpsr = spin1_int_disable();
-        while (!setup_done && in_spikes_get_next_spike(&spike)) {
+//        while (!setup_done && in_spikes_get_next_spike(&spike)) {
+        while (in_spikes_get_next_spike(&spike)) {
             spin1_mode_restore(cpsr);
             log_debug("Checking for row for spike 0x%.8x\n", spike);
 
@@ -115,25 +116,25 @@ void _setup_synaptic_dma_read() {
 //                    _do_direct_row(row_address);
 //                } else {
                     _do_dma_read(row_address, n_bytes_to_transfer);
-                    setup_done = true;
+//                    setup_done = true;
 //                }
             }
             cpsr = spin1_int_disable();
         }
         // potentially restore here?
 
-        if (!setup_done) {
-            finished = true; // finished trying for this spike
-        }
+//        if (!setup_done) {
+//            finished = true; // finished trying for this spike
+//        }
 //        cpsr = spin1_int_disable(); // remove this too?
-    }
+//    }
 
     // If the setup was not done, and there are no more spikes,
     // stop trying to set up synaptic DMAs
-    if (!setup_done) {
-        log_debug("DMA not busy");
+//    if (!setup_done) {
+//        log_debug("DMA not busy");
         dma_busy = false;
-    }
+//    }
     spin1_mode_restore(cpsr);
 }
 
