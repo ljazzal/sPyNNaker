@@ -27,8 +27,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractChangableAfterRun, AbstractGeneratesDataSpecification,
     AbstractHasAssociatedBinary, AbstractRewritesDataSpecification)
 from spinn_front_end_common.interface.simulation import simulation_utilities
-from spinn_front_end_common.utilities import (
-    helpful_functions, globals_variables)
+from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
