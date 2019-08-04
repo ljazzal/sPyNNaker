@@ -295,33 +295,33 @@ bool neuron_do_timestep_update(
     // update each neuron individually
     for (index_t neuron_index = 0; neuron_index < n_neurons; neuron_index++) {
 
-//        for (index_t synapse_type_index = 0 ; synapse_type_index < n_synapse_types; synapse_type_index++) {
-//
-//            uint32_t buff_index = ((synapse_type_index << synapse_index_bits) | neuron_index);
-//
-//            if(synapse_type_index > 0) {
-//
-//                sum = synaptic_contributions[buff_index];
-//            }
-//            else {
-//
-//                sum =
-//                    synaptic_contributions[buff_index] +
-//                    synaptic_contributions[buff_index + contribution_offset];
-//
-//                if(sum & 0x10000) {
-//
-//                    sum = SAT_VALUE;
-//                }
-//            }
-//
-//            neuron_impl_add_inputs(
-//                synapse_type_index,
-//                neuron_index,
-//                convert_weight_to_input(
-//                    sum,
-//                    synaptic_contributions_to_input_left_shifts[synapse_type_index]));
-//        }
+        for (index_t synapse_type_index = 0 ; synapse_type_index < n_synapse_types; synapse_type_index++) {
+
+            uint32_t buff_index = ((synapse_type_index << synapse_index_bits) | neuron_index);
+
+            if(synapse_type_index > 0) {
+
+                sum = synaptic_contributions[buff_index];
+            }
+            else {
+
+                sum =
+                    synaptic_contributions[buff_index] +
+                    synaptic_contributions[buff_index + contribution_offset];
+
+                if(sum & 0x10000) {
+
+                    sum = SAT_VALUE;
+                }
+            }
+
+            neuron_impl_add_inputs(
+                synapse_type_index,
+                neuron_index,
+                convert_weight_to_input(
+                    sum,
+                    synaptic_contributions_to_input_left_shifts[synapse_type_index]));
+        }
 
 //        // Get external bias from any source of intrinsic plasticity
 //        input_t external_bias =
@@ -372,49 +372,8 @@ bool neuron_do_timestep_update(
         } else {
             log_debug("the neuron %d has been determined to not spike",
                       neuron_index);
-        }
+         }
     }
-
-
-
-
-    // update each neuron individually
-    for (index_t neuron_index = 0; neuron_index < n_neurons; neuron_index++) {
-    	for (index_t synapse_type_index = 0 ; synapse_type_index < n_synapse_types; synapse_type_index++) {
-
-    		uint32_t buff_index = ((synapse_type_index << synapse_index_bits) | neuron_index);
-
-            if(synapse_type_index > 0) {
-
-                sum = synaptic_contributions[buff_index];
-            }
-            else {
-
-                sum =
-                    synaptic_contributions[buff_index] +
-                    synaptic_contributions[buff_index + contribution_offset];
-
-                if(sum & 0x10000) {
-
-                    sum = SAT_VALUE;
-                }
-            }
-
-            neuron_impl_add_inputs(
-                synapse_type_index,
-                neuron_index,
-                convert_weight_to_input(
-                    sum,
-                    synaptic_contributions_to_input_left_shifts[synapse_type_index]));
-        }
-
-
-    	// shape synapses
-    	neuron_impl_shape_synapses(neuron_index);
-
-    }
-
-
 
     // Disable interrupts to avoid possible concurrent access
     uint cpsr = 0;
