@@ -267,7 +267,7 @@ static inline bool neuron_impl_do_timestep_update(index_t neuron_index,
     }
 
     // Shape the existing input according to the included rule
-    synapse_types_shape_input(synapse_type);
+//    synapse_types_shape_input(synapse_type);
 
     #if LOG_LEVEL >= LOG_DEBUG
         neuron_model_print_state_variables(neuron);
@@ -275,6 +275,14 @@ static inline bool neuron_impl_do_timestep_update(index_t neuron_index,
 
     // Return the boolean to the model timestep update
     return spike;
+}
+
+
+static inline void neuron_impl_shape_synapses(index_t neuron_index){
+    synapse_param_pointer_t synapse_type =
+        &neuron_synapse_shaping_params[neuron_index];
+
+    synapse_types_shape_input(synapse_type);
 }
 
 //! \brief stores neuron parameter back into sdram

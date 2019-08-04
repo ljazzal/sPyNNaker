@@ -67,10 +67,10 @@ typedef enum callback_priorities{
 #define NUMBER_OF_REGIONS_TO_RECORD 4
 
 // Globals
-
-//uint32_t measurement_in[1000];
-//uint32_t measurement_out[1000];
-//uint32_t measurement_index = 0;
+#define ACC_PROFILING false
+uint32_t measurement_in[1000];
+uint32_t measurement_out[1000];
+uint32_t measurement_index = 0;
 
 //! the current timer tick value
 //! the timer tick callback returning the same value.
@@ -199,7 +199,9 @@ void timer_callback(uint timer_count, uint unused) {
     time++;
     last_rewiring_time++;
 
-//    measurement_in[measurement_index] = tc[T1_COUNT];
+    if (ACC_PROFILING){
+    	measurement_in[measurement_index] = tc[T1_COUNT];
+    }
 
     // This is the part where I save the input and output indices
     //   from the circular buffer
@@ -211,13 +213,16 @@ void timer_callback(uint timer_count, uint unused) {
        then do reporting for finishing */
     if (infinite_run != TRUE && time >= simulation_ticks) {
 
-//        for (int i=0; i< 1000; i++){
-//        	io_printf(IO_BUF, "In: %u  Out: %u  Diff: %u\n",
-//        			measurement_in[i],
-//					measurement_out[i],
-//					(measurement_in[i] - measurement_out[i]));
-//        }
-//        io_printf(IO_BUF, " Job Done ");
+        if (ACC_PROFILING){
+        	for (int i=0; i< 1000; i++){
+        		io_printf(IO_BUF, "In: %u  Out: %u  Diff: %u\n",
+        				measurement_in[i],
+						measurement_out[i],
+						(measurement_in[i] - measurement_out[i]));
+        	}
+        }
+        io_printf(IO_BUF, " Job Done ");
+
         // Enter pause and resume state to avoid another tick
         simulation_handle_pause_resume(resume_callback);
 
@@ -290,8 +295,10 @@ void timer_callback(uint timer_count, uint unused) {
         recording_do_timestep_update(time);
     }
 
-//    measurement_out[measurement_index] = tc[T1_COUNT];
-//    measurement_index++;
+    if (ACC_PROFILING){
+    	measurement_out[measurement_index] = tc[T1_COUNT];
+    	measurement_index++;
+    }
 
 //    profiler_write_entry_disable_irq_fiq(PROFILER_EXIT | PROFILER_TIMER);
 //    io_printf(IO_BUF, "timer_callback complete: %u\n", tc[T1_COUNT]);
