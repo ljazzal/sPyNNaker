@@ -124,3 +124,6 @@ class AbstractPyNNModel(object):
         :return: An application vertex for the population
         :rtype: :py:class:`pacman.model.graphs.application.ApplicationVertex`
         """
+
+    def __repr__(self):
+        return self.__class__.__name__
