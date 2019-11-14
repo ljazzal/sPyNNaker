@@ -172,34 +172,52 @@ static inline void process_fixed_synapses(
         // Get the next 32 bit word from the synaptic_row
         // (should auto increment pointer in single instruction)
         uint32_t synaptic_word = *synaptic_words++;
+        uint32_t synapse_type = synapse_row_sparse_type(
+            synaptic_word, synapse_index_bits, synapse_type_mask);
 
-        // Extract components from this word
-        uint32_t delay =
-                synapse_row_sparse_delay(synaptic_word, synapse_type_index_bits);
-        uint32_t combined_synapse_neuron_index = synapse_row_sparse_type_index(
-                synaptic_word, synapse_type_index_mask);
-        uint32_t weight = synapse_row_sparse_weight(synaptic_word);
+        // If synapse type has non-input synapses and this synapse
+        // connects to one, pass event directly to synapse dynamics
+        if (synapse_type > 1) {
+            // Dopaminergic neurons send some amount of neuromodulator
+            // concentration so this can actually be a weight as usual.
+            int32_t concentration = synapse_row_sparse_weight(synaptic_word);
+            uint32_t index = synapse_row_sparse_index(
+                synaptic_word, synapse_index_mask);
+            // In case this is punishment synapse, invert dopamine level
+            // to cause depression.
+            if (synapse_type == 3) {
+                concentration = ~concentration + 1;
+            }
+            synapse_dynamics_process_neuromodulator_event(time,
+                concentration, index, synapse_type);
+        } else {
+            // Extract components from this word
+            uint32_t delay = synapse_row_sparse_delay(synaptic_word, synapse_type_index_bits);
 
-        // Convert into ring buffer offset
-        uint32_t ring_buffer_index = synapses_get_ring_buffer_index_combined(
-                delay + time, combined_synapse_neuron_index,
-                synapse_type_index_bits);
+            uint32_t combined_synapse_neuron_index = synapse_row_sparse_type_index(
+                    synaptic_word, synapse_type_index_mask);
+            uint32_t weight = synapse_row_sparse_weight(synaptic_word);
 
-        // Add weight to current ring buffer value
-        uint32_t accumulation = ring_buffers[ring_buffer_index] + weight;
+            // Convert into ring buffer offset
+            uint32_t ring_buffer_index = synapses_get_ring_buffer_index_combined(
+                delay + time, combined_synapse_neuron_index, synapse_type_index_bits);
 
-        // If 17th bit is set, saturate accumulator at UINT16_MAX (0xFFFF)
-        // **NOTE** 0x10000 can be expressed as an ARM literal,
-        //          but 0xFFFF cannot.  Therefore, we use (0x10000 - 1)
-        //          to obtain this value
-        uint32_t sat_test = accumulation & 0x10000;
-        if (sat_test) {
-            accumulation = sat_test - 1;
-            saturation_count++;
+            // Add weight to current ring buffer value
+            uint32_t accumulation = ring_buffers[ring_buffer_index] + weight;
+
+            // If 17th bit is set, saturate accumulator at UINT16_MAX (0xFFFF)
+            // **NOTE** 0x10000 can be expressed as an ARM literal,
+            //          but 0xFFFF cannot.  Therefore, we use (0x10000 - 1)
+            //          to obtain this value
+            uint32_t sat_test = accumulation & 0x10000;
+            if (sat_test) {
+                accumulation = sat_test - 1;
+                saturation_count += 1;
+            }
+
+            // Store saturated value back in ring-buffer
+            ring_buffers[ring_buffer_index] = accumulation;
         }
-
-        // Store saturated value back in ring-buffer
-        ring_buffers[ring_buffer_index] = accumulation;
     }
 }
 

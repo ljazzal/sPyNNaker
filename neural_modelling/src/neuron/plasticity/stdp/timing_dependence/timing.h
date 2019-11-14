@@ -18,7 +18,7 @@
 #ifndef _TIMING_H_
 #define _TIMING_H_
 
-#include <neuron/plasticity/stdp/synapse_structure/synapse_structure.h>
+// #include <neuron/plasticity/stdp/synapse_structure/synapse_structure.h>
 
 address_t timing_initialise(address_t address);
 
@@ -30,6 +30,8 @@ static post_trace_t timing_add_post_spike(
 static pre_trace_t timing_add_pre_spike(
         uint32_t time, uint32_t last_time, pre_trace_t last_trace);
 
+#ifndef _TIMING_IZHIKEVICH_NEUROMODULATION_H_
+
 static update_state_t timing_apply_pre_spike(
         uint32_t time, pre_trace_t trace, uint32_t last_pre_time,
         pre_trace_t last_pre_trace,  uint32_t last_post_time,
@@ -39,5 +41,17 @@ static update_state_t timing_apply_post_spike(
         uint32_t time, post_trace_t trace, uint32_t last_pre_time,
         pre_trace_t last_pre_trace, uint32_t last_post_time,
         post_trace_t last_post_trace, update_state_t previous_state);
+
+#endif
+
+#ifdef _TIMING_IZHIKEVICH_NEUROMODULATION_H_
+
+static inline int32_t get_post_trace(int32_t trace);
+
+static inline int32_t get_dopamine_trace(int32_t trace);
+
+static inline int32_t trace_build(int32_t post_trace, int32_t dopamine_trace);
+
+#endif
 
 #endif // _TIMING_H_
