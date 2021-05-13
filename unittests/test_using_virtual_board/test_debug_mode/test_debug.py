@@ -81,7 +81,7 @@ class TestDebug(BaseTestCase):
         sim.run(1000)
         pop.get_data("v")
         report_directory = globals_variables.get_simulator().\
-            _report_default_directory
+            _run_report_directory
         sim.end()
 
         found = os.listdir(report_directory)

@@ -17,6 +17,8 @@
 Synfirechain-like example
 """
 from pyNN.random import NumpyRNG
+from spinn_front_end_common.interface.simulator_globals import (
+    run_report_directory)
 import spynnaker8 as p
 from spynnaker8 import IF_curr_exp
 from spynnaker8 import SpikeSourceArray
@@ -481,7 +483,7 @@ class SynfireRunner(object):
         p.run(run_times[-1])
 
         self._default_report_folder = \
-            p.globals_variables.get_simulator()._report_default_directory
+           run_report_directory()
 
         return results
 

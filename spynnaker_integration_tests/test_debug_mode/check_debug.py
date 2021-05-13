@@ -18,7 +18,8 @@ from spinn_utilities.config_holder import get_config_bool
 import pacman.operations.algorithm_reports.reports as reports_names
 from pacman.operations.algorithm_reports.network_specification import \
     NetworkSpecification
-from spinn_front_end_common.utilities import globals_variables
+from spinn_front_end_common.interface.simulator_globals import (
+    run_report_directory)
 from spinn_front_end_common.utilities.report_functions.\
     routing_table_from_machine_report import _FOLDER_NAME as \
     routing_tables_from_machine_report
@@ -97,7 +98,7 @@ class CheckDebug(BaseTestCase):
         pop.get_data("v")
         sim.end()
 
-        report_directory = globals_variables.run_report_directory()
+        report_directory = run_report_directory()
         found = os.listdir(report_directory)
         for report in reports:
             self.assertIn(report, found)
