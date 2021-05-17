@@ -16,12 +16,12 @@ import struct
 from enum import Enum
 import numpy
 
+from spinn_utilities.config_holder import get_config_int
 from data_specification.enums import DataType
 from spinn_front_end_common.interface.buffer_management import (
     recording_utilities)
 from spinn_front_end_common.interface.simulation import simulation_utilities
-from spinn_front_end_common.utilities import (
-    helpful_functions, globals_variables)
+from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_SECOND_CONVERSION, SIMULATION_N_BYTES, BYTES_PER_WORD,
     MICRO_TO_MILLISECOND_CONVERSION)
@@ -671,8 +671,7 @@ class SpikeSourcePoissonMachineVertex(
             spikes_per_tick[slow_elements] = 1.0 / isi[slow_elements]
 
             # Convert spikes per tick to rates
-            machine_time_step = (
-                globals_variables.get_simulator().machine_time_step)
+            machine_time_step = get_config_int("Machine", "machine_time_step")
             self._app_vertex.rates.set_value_by_id(
                 i,
                 spikes_per_tick *
