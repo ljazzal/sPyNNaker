@@ -21,6 +21,8 @@ from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.logger_utils import warn_once
 from spinn_utilities.ordered_set import OrderedSet
+from spinn_front_end_common.interface.simulator_globals import (
+    get_buffer_manager, get_no_machine_time_steps, get_placements)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spynnaker.pyNN.models.common import (
@@ -249,8 +251,8 @@ class Recorder(object):
             # assuming we got here, everything is ok, so we should go get the
             # data
             results = self.__vertex.get_data(
-                variable, sim.no_machine_time_steps, sim.placements,
-                sim.buffer_manager,
+                variable, get_no_machine_time_steps(), get_placements(),
+                get_buffer_manager(),
                 get_config_int("Machine", "machine_time_step"))
             (data, indexes, sampling_interval) = results
 
