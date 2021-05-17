@@ -355,7 +355,7 @@ def setup(timestep=_pynn_control.DEFAULT_TIMESTEP,
         graph_label = "PyNN0.8_graph"
 
     # create the main object for all stuff related software
-    SpiNNaker(
+    simulator = SpiNNaker(
         database_socket_addresses=database_socket_addresses,
         extra_algorithm_xml_paths=extra_algorithm_xml_paths,
         extra_mapping_inputs=extra_mapping_inputs,
@@ -374,7 +374,7 @@ def setup(timestep=_pynn_control.DEFAULT_TIMESTEP,
                        "command which we do not consider", extra_params)
 
     # get overloaded functions from PyNN in relation of our simulator object
-    _create_overloaded_functions(globals_variables.get_simulator())
+    _create_overloaded_functions(simulator)
 
     return rank()
 
