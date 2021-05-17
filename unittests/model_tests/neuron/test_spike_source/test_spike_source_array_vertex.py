@@ -35,10 +35,6 @@ class TestSpikeSourceArrayVertex(unittest.TestCase):
         globals_variables._failed_state = SpynnakerFailedState("test")
         globals_variables.set_simulator(MockSimulator())
 
-    @classmethod
-    def tearDownClass(cls):
-        globals_variables.unset_simulator()
-
     def test_no_spikes(self):
         v = SpikeSourceArrayVertex(
             n_neurons=5, spike_times=[], constraints=None, label="test",
