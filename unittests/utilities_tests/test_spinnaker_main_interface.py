@@ -15,6 +15,7 @@
 
 import os
 import sys
+from testfixtures.logcapture import LogCapture
 import unittest
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
     AbstractSpinnakerBase)
@@ -23,6 +24,8 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableFinder
 from spynnaker.pyNN.utilities.spynnaker_failed_state import (
     SpynnakerFailedState)
+# This imports AbstractSpiNNakerCommon which calls set_cfg_files
+import spynnaker8  # noqa: F401
 
 
 class Close_Once(object):
@@ -65,9 +68,15 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         interface.stop(turn_off_machine=False, clear_routing_tables=False,
                        clear_tags=False)
         self.assertTrue(mock_contoller.closed)
-        with self.assertRaises(ConfigurationException):
+        with LogCapture() as lc:
             interface.stop(turn_off_machine=False, clear_routing_tables=False,
                            clear_tags=False)
+            seen = False
+            for record in lc.records:
+                if record.levelname == 'WARNING' and \
+                        "Simulator has already been shutdown" in str(record.msg):
+                    seen = True
+            self.assertTrue(seen)
 
 
 if __name__ == "__main__":

@@ -18,7 +18,8 @@ import unittest
 import pacman.operations.algorithm_reports.reports as reports_names
 from pacman.operations.algorithm_reports.network_specification import (
     NetworkSpecification)
-from spinn_front_end_common.utilities import globals_variables
+from spinn_front_end_common.interface.simulator_globals import \
+    run_report_directory
 from spinnaker_testbase import BaseTestCase
 import spynnaker8 as sim
 
@@ -80,11 +81,9 @@ class TestDebug(BaseTestCase):
                        synapse_type=sim.StaticSynapse(weight=5))
         sim.run(1000)
         pop.get_data("v")
-        report_directory = globals_variables.get_simulator().\
-            _run_report_directory
         sim.end()
 
-        found = os.listdir(report_directory)
+        found = os.listdir(run_report_directory())
         print(found)
         for report in reports:
             self.assertIn(report, found)
