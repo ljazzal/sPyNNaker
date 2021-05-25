@@ -182,7 +182,9 @@ class AbstractSpiNNakerCommon(
 
         if get_config_bool("Reports", "reports_enabled"):
             if get_config_bool("Reports", "write_synaptic_report"):
-                extra_algorithms_pre_run.append("SynapticMatrixReport")
+                extra_post_run_algorithms.append(
+                    "SpYNNakerConnectionHolderGenerator")
+                extra_post_run_algorithms.append("SynapticMatrixReport")
         if user_extra_algorithms_pre_run is not None:
             extra_algorithms_pre_run.extend(user_extra_algorithms_pre_run)
 

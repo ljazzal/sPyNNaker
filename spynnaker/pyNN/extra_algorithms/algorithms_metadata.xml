@@ -619,6 +619,7 @@
             <param_name>report_folder</param_name>
             <param_name>connection_holder</param_name>
             <param_name>dsg_targets</param_name>
+            <token>ApplicationRun</token>
         </required_inputs>
     </algorithm>
     <algorithm name="RedundantPacketCountReport">
