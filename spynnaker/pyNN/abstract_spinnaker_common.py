@@ -172,11 +172,7 @@ class AbstractSpiNNakerCommon(
         extra_load_algorithms.append("FinishConnectionHolders")
         extra_algorithms_pre_run = []
 
-        if get_config_bool("Reports", "draw_network_graph"):
-            extra_mapping_algorithms.append(
-                "SpYNNakerConnectionHolderGenerator")
-            # extra_mapping_algorithms.append(
-            #     "PreAllocateForBitFieldRouterCompressor")
+        if get_config_bool("Reports", "write_network_graph"):
             extra_mapping_algorithms.append(
                 "SpYNNakerNeuronGraphNetworkSpecificationReport")
 
