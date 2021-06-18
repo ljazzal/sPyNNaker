@@ -324,9 +324,8 @@ class SynapticMatrices(object):
             # We can skip this input if the source is virtual and the app
             # vertex is the same as the last time we saw this same key data
             last_app_vertex = seen_rinfo.get(rdata, None)
-            this_app_vertex = machine_edge.pre_vertex.application_vertex
-            if (last_app_vertex is not None and
-                    isinstance(last_app_vertex, AbstractVirtual) and
+            this_app_vertex = machine_edge.pre_vertex.app_vertex
+            if (isinstance(last_app_vertex, AbstractVirtual) and
                     this_app_vertex == last_app_vertex):
                 continue
             seen_rinfo[rdata] = this_app_vertex
