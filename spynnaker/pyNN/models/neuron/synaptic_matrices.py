@@ -19,6 +19,7 @@ from collections import defaultdict
 
 from spinn_utilities.ordered_set import OrderedSet
 from pacman.model.routing_info import BaseKeyAndMask
+from pacman.model.graphs import AbstractVirtual
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spynnaker.pyNN.models.neural_projections import (
     ProjectionApplicationEdge, DelayedApplicationEdge)
@@ -315,8 +316,12 @@ class SynapticMatrices(object):
         """
         in_edges_by_app_edge = defaultdict(OrderedSet)
         key_space_tracker = KeySpaceTracker()
+        seen_rinfo = set()
         for machine_edge in in_machine_edges:
             rinfo = routing_info.get_routing_info_for_edge(machine_edge)
+            if rinfo.first_key_and_mask in seen_rinfo and isinstance(machine_edge.pre_vertex, AbstractVirtual):
+                continue
+            seen_rinfo.add(rinfo.first_key_and_mask)
             key_space_tracker.allocate_keys(rinfo)
             app_edge = machine_edge.app_edge
             if isinstance(app_edge, ProjectionApplicationEdge):
