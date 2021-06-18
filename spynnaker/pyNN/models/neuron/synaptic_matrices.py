@@ -316,12 +316,21 @@ class SynapticMatrices(object):
         """
         in_edges_by_app_edge = defaultdict(OrderedSet)
         key_space_tracker = KeySpaceTracker()
-        seen_rinfo = set()
+        seen_rinfo = dict()
         for machine_edge in in_machine_edges:
             rinfo = routing_info.get_routing_info_for_edge(machine_edge)
-            if rinfo.first_key_and_mask in seen_rinfo and isinstance(machine_edge.pre_vertex, AbstractVirtual):
+            rdata = rinfo.first_key_and_mask
+
+            # We can skip this input if the source is virtual and the app
+            # vertex is the same as the last time we saw this same key data
+            last_app_vertex = seen_rinfo.get(rdata, None)
+            this_app_vertex = machine_edge.pre_vertex.application_vertex
+            if (last_app_vertex is not None and
+                    isinstance(last_app_vertex, AbstractVirtual) and
+                    this_app_vertex == last_app_vertex):
                 continue
-            seen_rinfo.add(rinfo.first_key_and_mask)
+            seen_rinfo[rdata] = this_app_vertex
+
             key_space_tracker.allocate_keys(rinfo)
             app_edge = machine_edge.app_edge
             if isinstance(app_edge, ProjectionApplicationEdge):
