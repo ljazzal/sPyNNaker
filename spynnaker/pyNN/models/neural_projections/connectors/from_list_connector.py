@@ -343,6 +343,7 @@ class FromListConnector(AbstractConnector):
         # Set the source and targets
         self.__sources = self.__conn_list[:, _SOURCE]
         self.__targets = self.__conn_list[:, _TARGET]
+        print(self.__sources, self.__targets)
 
         # Find any weights
         self.__weights = None
