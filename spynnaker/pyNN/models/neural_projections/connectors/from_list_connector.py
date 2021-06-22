@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import time
 import numpy
 from spinn_utilities.overrides import overrides
 from spinn_front_end_common.utilities.constants import (
@@ -140,6 +140,22 @@ class FromListConnector(AbstractConnector):
         post_indices = numpy.searchsorted(
             post_bins, self.__targets, side="right")
 
+        #x = pre_indices == 2
+        #y = post_indices == 3
+        #z = (pre_indices == 2) & (post_indices == 3)
+        #pre_sets = [set(numpy.asarray(pre_indices == i).nonzero()[0]) for i in range(1, len(pre_bins))]
+        #post_sets = [set(numpy.asarray(post_indices == i).nonzero() [0])for i in range(1, len(post_bins))]
+        #post_groups = [numpy.where(post_indices == i) for i in range(len(post_bins))]
+        #check = dict()
+        #for i in range(1, len(pre_bins)):
+        #    for j in range(1, len(post_bins)):
+        #        check[(pre_bins[i]-1, post_bins[j]-1)] = numpy.intersect1d(pre_groups[i], post_groups[j])
+        #a = [numpy.intersect1d(sg, tg) for sg in pre_groups for tg in post_groups]
+        #a =[numpy.array(sg.intersection(tg)) for sg in pre_sets for tg in post_sets]
+
+        t0 = time.time()
+        split_indices = [numpy.asarray((pre_indices == i) & (post_indices == j)).nonzero()[0] for i in range(1, len(pre_bins)) for j in range(1, len(post_bins))]
+        t1 = time.time()
         # Join the groups from both axes
         n_bins = (len(pre_bins) + 1, len(post_bins) + 1)
         joined_indices = numpy.ravel_multi_index(
@@ -159,7 +175,8 @@ class FromListConnector(AbstractConnector):
         # Ignore the outliers
         split_indices = split_indices[:-1].reshape(n_bins)[1:-1, 1:-1]
         split_indices = split_indices.reshape(-1)
-
+        t2 = time.time()
+        print(t2 - t1, t1 - t0)
         # Get the results indexed by hi_atom in the slices
         pre_post_bins = [(pre - 1, post - 1) for pre in pre_bins[1:]
                          for post in post_bins[1:]]
