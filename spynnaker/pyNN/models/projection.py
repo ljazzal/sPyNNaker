@@ -39,6 +39,8 @@ from spynnaker._version import __version__
 from spynnaker.pyNN.models.populations import Population, PopulationView
 from spynnaker.pyNN.models.neuron import AbstractPopulationVertex
 from spynnaker.pyNN.models.spike_source import SpikeSourcePoissonVertex
+from spynnaker.pyNN.models.neural_projections.connectors import (
+    MultapseConnector)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -161,6 +163,20 @@ class Projection(object):
             pre_is_view, post_is_view, rng, synapse_dynamics,
             synaptic_type, sim.use_virtual_board,
             synapse_dynamics.weight, synapse_dynamics.delay)
+
+        if isinstance(connector, MultapseConnector):
+            if connector.avg_row_length(self.__synapse_information) <= 1:
+                logger.warn(
+                    "Replacing FixedTotalNumberConnector with "
+                    f"FromListConnector for {connector.n} synapses")
+                connector = FromListConnector(connector.generate_list(
+                    self.__synapse_information))
+                self.__synapse_information = SynapseInformation(
+                    connector, pre_synaptic_population,
+                    post_synaptic_population,
+                    pre_is_view, post_is_view, rng, synapse_dynamics,
+                    synaptic_type, sim.use_virtual_board,
+                    synapse_dynamics.weight, synapse_dynamics.delay)
 
         # Set projection information in connector
         connector.set_projection_information(self.__synapse_information)
