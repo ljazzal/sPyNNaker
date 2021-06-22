@@ -183,12 +183,12 @@ class MultapseConnector(AbstractGenerateConnectorOnMachine,
         max_in_slice = utility_calls.get_probable_maximum_selected(
             self.__num_synapses, self.__num_synapses, prob_in_slice)
         if max_in_slice <= 1.0:
-            return 1.0
+            return 1
         prob_in_row = 1.0 / synapse_info.n_pre_neurons
         n_connections = utility_calls.get_probable_maximum_selected(
             self.__num_synapses, max_in_slice, prob_in_row)
         if n_connections <= 1.0:
-            return 1.0
+            return 1
 
         if min_delay is None or max_delay is None:
             return int(math.ceil(n_connections))
@@ -198,7 +198,7 @@ class MultapseConnector(AbstractGenerateConnectorOnMachine,
             synapse_info.n_pre_neurons * synapse_info.n_post_neurons,
             n_connections, min_delay, max_delay, synapse_info)
         if n_delayed <= 1.0:
-            return 1.0
+            return 1
         return n_delayed
 
     @overrides(AbstractConnector.get_n_connections_to_post_vertex_maximum)
