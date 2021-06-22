@@ -233,20 +233,14 @@ class MultapseConnector(AbstractGenerateConnectorOnMachine,
 
         :rtype: numpy.ndarray
         """
-        pairs = numpy.mgrid[
-            slice(0, synapse_info.n_pre_neurons),
-            slice(0, synapse_info.n_post_neurons)].T.reshape((-1, 2))
-
-        # Deal with case where self-connections aren't allowed
-        if (not self.__allow_self_connections and
-                synapse_info.pre_population is synapse_info.post_population):
-            pairs = pairs[pairs[:, 0] != pairs[:, 1]]
+        if not self.__allow_self_connections:
+            raise NotImplementedError()
 
         # Now do the actual random choice from the available connections
         try:
             chosen = numpy.random.choice(
-                pairs.shape[0], size=self.__num_synapses,
-                replace=self.__with_replacement)
+                synapse_info.n_pre_neurons * synapse_info.n_post_neurons,
+                size=self.__num_synapses, replace=self.__with_replacement)
         except Exception as e:
             raise SpynnakerException(
                 "MultapseConnector: The number of connections is too large "
@@ -255,8 +249,8 @@ class MultapseConnector(AbstractGenerateConnectorOnMachine,
 
         slce = Slice(0, self.__num_synapses)
         connections = numpy.zeros(self.__num_synapses, dtype=FROM_LIST_DTYPE)
-        connections["source"] = pairs[chosen, 0]
-        connections["target"] = pairs[chosen, 1]
+        connections["source"] = chosen // synapse_info.n_post_neurons
+        connections["target"] = chosen % synapse_info.n_post_neurons
         connections["weight"] = self._generate_weights(
             connections["source"], connections["target"], self.__num_synapses,
             [slice(0, self.__num_synapses)], slce, slce, synapse_info)
