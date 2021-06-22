@@ -233,8 +233,9 @@ class MultapseConnector(AbstractGenerateConnectorOnMachine,
 
         :rtype: numpy.ndarray
         """
-        pairs = numpy.mgrid[synapse_info.n_pre_neurons,
-                            synapse_info.n_post_neurons].T.reshape((-1, 2))
+        pairs = numpy.mgrid[
+            slice(0, synapse_info.n_pre_neurons),
+            slice(0, synapse_info.n_post_neurons)].T.reshape((-1, 2))
 
         # Deal with case where self-connections aren't allowed
         if (not self.__allow_self_connections and
