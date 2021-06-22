@@ -247,16 +247,20 @@ class MultapseConnector(AbstractGenerateConnectorOnMachine,
                 "for sampling without replacement; "
                 "reduce the value specified in the connector") from e
 
+        sources = chosen // synapse_info.n_post_neurons
+        targets = chosen % synapse_info.n_post_neurons
+
         slce = Slice(0, self.__num_synapses)
-        connections = numpy.zeros(self.__num_synapses, dtype=FROM_LIST_DTYPE)
-        connections["source"] = chosen // synapse_info.n_post_neurons
-        connections["target"] = chosen % synapse_info.n_post_neurons
-        connections["weight"] = self._generate_weights(
-            connections["source"], connections["target"], self.__num_synapses,
+        connections = numpy.zeros((self.__num_synapses, 4), dtype="float64")
+        connections[:, 0] = sources
+        connections[:, 1] = targets
+        connections[:, 2] = self._generate_weights(
+            sources, targets, self.__num_synapses,
             [slice(0, self.__num_synapses)], slce, slce, synapse_info)
-        connections["delay"] = self._generate_delays(
-            connections["source"], connections["target"], self.__num_synapses,
+        connections[:, 3] = self._generate_delays(
+            sources, targets, self.__num_synapses,
             [slice(0, self.__num_synapses)], slce, slce, synapse_info)
+        return connections
 
     @overrides(AbstractConnector.create_synaptic_block)
     def create_synaptic_block(
