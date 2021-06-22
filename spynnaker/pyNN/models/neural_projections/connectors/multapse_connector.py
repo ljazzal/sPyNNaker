@@ -182,6 +182,8 @@ class MultapseConnector(AbstractGenerateConnectorOnMachine,
             1.0)
         max_in_slice = utility_calls.get_probable_maximum_selected(
             self.__num_synapses, self.__num_synapses, prob_in_slice)
+        if max_in_slice <= 1.0:
+            return 1.0
         prob_in_row = 1.0 / synapse_info.n_pre_neurons
         n_connections = utility_calls.get_probable_maximum_selected(
             self.__num_synapses, max_in_slice, prob_in_row)
