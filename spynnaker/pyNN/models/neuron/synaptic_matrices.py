@@ -19,7 +19,7 @@ from collections import defaultdict
 
 from spinn_utilities.ordered_set import OrderedSet
 from pacman.model.routing_info import BaseKeyAndMask
-from pacman.model.graphs import AbstractVirtual
+from pacman.model.graphs.application import ApplicationFPGAVertex
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spynnaker.pyNN.models.neural_projections import (
     ProjectionApplicationEdge, DelayedApplicationEdge)
@@ -325,7 +325,7 @@ class SynapticMatrices(object):
             # vertex is the same as the last time we saw this same key data
             last_app_vertex = seen_rinfo.get(rdata, None)
             this_app_vertex = machine_edge.pre_vertex.app_vertex
-            if (isinstance(last_app_vertex, AbstractVirtual) and
+            if (isinstance(last_app_vertex, ApplicationFPGAVertex) and
                     this_app_vertex == last_app_vertex):
                 continue
             seen_rinfo[rdata] = this_app_vertex
