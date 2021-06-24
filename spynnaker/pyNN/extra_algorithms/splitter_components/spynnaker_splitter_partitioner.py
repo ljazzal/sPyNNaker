@@ -15,6 +15,7 @@
 from spinn_utilities.overrides import overrides
 from pacman.model.partitioner_interfaces import AbstractSlicesConnect
 from pacman.operations.partition_algorithms import SplitterPartitioner
+from pacman.model.graphs.application import ApplicationFPGAVertex
 
 
 class SpynnakerSplitterPartitioner(SplitterPartitioner):
@@ -49,9 +50,11 @@ class SpynnakerSplitterPartitioner(SplitterPartitioner):
             self, src_machine_vertex, dest_machine_vertex,
             common_edge_type, app_edge, machine_graph,
             app_outgoing_edge_partition, resource_tracker):
-        # filter off connectivity
-        if (isinstance(app_edge, AbstractSlicesConnect) and not
-                app_edge.could_connect(
+        # filter off connectivity, but avoid filtering application FGPA
+        # vertex-sourced edges as these might be multi-sourced
+        if (isinstance(app_edge, AbstractSlicesConnect) and
+                not isinstance(app_edge.pre_vertex, ApplicationFPGAVertex) and
+                not app_edge.could_connect(
                     src_machine_vertex.vertex_slice,
                     dest_machine_vertex.vertex_slice)):
             return
