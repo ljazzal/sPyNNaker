@@ -51,13 +51,8 @@
                 <param_name>executable_finder</param_name>
                 <param_type>ExecutableFinder</param_type>
             </parameter>
-            <parameter>
-                <param_name>extract_iobuf</param_name>
-                <param_type>SynapticExpanderReadIOBuf</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>extract_iobuf</param_name>
             <param_name>placements</param_name>
             <param_name>transceiver</param_name>
             <param_name>executable_finder</param_name>
@@ -111,13 +106,8 @@
                 <param_name>provenance_data_objects</param_name>
                 <param_type>RouterCompressorProvenanceItems</param_type>
             </parameter>
-            <parameter>
-                <param_name>read_expander_iobuf</param_name>
-                <param_type>SynapticExpanderReadIOBuf</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>read_expander_iobuf</param_name>
             <param_name>executable_finder</param_name>
             <param_name>routing_tables</param_name>
             <param_name>transceiver</param_name>
@@ -182,13 +172,8 @@
                 <param_name>provenance_data_objects</param_name>
                 <param_type>RouterCompressorProvenanceItems</param_type>
             </parameter>
-            <parameter>
-                <param_name>read_expander_iobuf</param_name>
-                <param_type>SynapticExpanderReadIOBuf</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>read_expander_iobuf</param_name>
             <param_name>executable_finder</param_name>
             <param_name>routing_tables</param_name>
             <param_name>transceiver</param_name>
@@ -212,10 +197,6 @@
         <python_module>spynnaker.pyNN.extra_algorithms.spynnaker_machine_bit_field_router_compressor</python_module>
         <python_class>SpynnakerMachineBitFieldPairRouterCompressor</python_class>
         <input_definitions>
-            <parameter>
-                <param_name>read_expander_iobuf</param_name>
-                <param_type>SynapticExpanderReadIOBuf</param_type>
-            </parameter>
             <parameter>
                 <param_name>routing_tables</param_name>
                 <param_type>RoutingTables</param_type>
@@ -267,7 +248,6 @@
             <param_name>placements</param_name>
             <param_name>routing_infos</param_name>
             <param_name>executable_targets</param_name>
-            <param_name>read_expander_iobuf</param_name>
             <token part="BitFieldData">DataLoaded</token>
         </required_inputs>
         <optional_inputs>

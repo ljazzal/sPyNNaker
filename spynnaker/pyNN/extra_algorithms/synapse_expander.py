@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities.system_control_logic import \
@@ -31,7 +32,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def synapse_expander(
-        placements, transceiver, executable_finder, extract_iobuf):
+        placements, transceiver, executable_finder):
     """ Run the synapse expander.
 
     .. note::
@@ -43,7 +44,6 @@ def synapse_expander(
         How to talk to the machine.
     :param executable_finder:
         How to find the synapse expander binaries.
-    :param bool extract_iobuf: flag for extracting iobuf
     :type executable_finder:
         ~spinn_utilities.executable_finder.ExecutableFinder
     """
@@ -57,6 +57,7 @@ def synapse_expander(
     progress = ProgressBar(expander_cores.total_processors,
                            "Expanding Synapses")
     expander_app_id = transceiver.app_id_tracker.get_new_id()
+    extract_iobuf = get_config_bool("Reports", "write_expander_iobuf")
     run_system_application(
         expander_cores, expander_app_id, transceiver, executable_finder,
         extract_iobuf, None, [CPUState.FINISHED], False,

@@ -136,8 +136,6 @@ class AbstractSpiNNakerCommon(AbstractSpinnakerBase):
         # update inputs needed by the machine level calls.
 
         extra_mapping_inputs = dict()
-        extra_mapping_inputs["SynapticExpanderReadIOBuf"] = \
-            get_config_bool("Reports", "write_expander_iobuf")
         if user_extra_mapping_inputs is not None:
             extra_mapping_inputs.update(user_extra_mapping_inputs)
 

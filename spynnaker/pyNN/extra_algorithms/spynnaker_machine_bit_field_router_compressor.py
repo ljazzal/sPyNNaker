@@ -15,6 +15,7 @@
 
 import logging
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.model import ExecutableTargets
@@ -92,8 +93,7 @@ class AbstractMachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
 
         # just rerun the synaptic expander for safety purposes
         self._rerun_synaptic_cores(
-            expander_chip_cores, transceiver, executable_finder, True,
-            read_expander_iobuf)
+            expander_chip_cores, transceiver, executable_finder, True)
 
         return prov_items
 
@@ -168,6 +168,8 @@ class AbstractMachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         if synaptic_expander_rerun_cores.total_processors:
             logger.info("rerunning synaptic expander")
             expander_app_id = transceiver.app_id_tracker.get_new_id()
+            read_expander_iobuf = get_config_bool(
+                "Reports", "write_expander_iobuf")
             run_system_application(
                 synaptic_expander_rerun_cores, expander_app_id, transceiver,
                 executable_finder, read_expander_iobuf,
