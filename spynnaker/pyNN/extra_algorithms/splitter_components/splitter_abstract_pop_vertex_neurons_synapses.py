@@ -99,7 +99,11 @@ class SplitterAbstractPopulationVertexNeuronsSynapses(
         # The fixed slices the vertices are divided into
         "__slices",
         # The next synapse core to use for an incoming machine edge
-        "__next_synapse_index"]
+        "__next_synapse_index",
+        # The outgoing vertices cached
+        "__outgoing_vertices",
+        # The incoming vertices cached
+        "__incoming_vertices"]
 
     SPLITTER_NAME = "SplitterAbstractPopulationVertexNeuronsSynapses"
 
@@ -291,6 +295,12 @@ class SplitterAbstractPopulationVertexNeuronsSynapses(
             resource_tracker.allocate_constrained_group_resources(
                 all_resources)
 
+        self.__outgoing_vertices = {
+            v: [MachineEdge] for v in self.__neuron_vertices}
+        self.__incoming_vertices = [
+            {self.__synapse_verts_by_neuron[neuron][index]: [MachineEdge]
+                for neuron in self.__neuron_vertices}
+            for index in self.__n_synapse_vertices]
         return True
 
     def __add_poisson_multicast(
@@ -551,7 +561,7 @@ class SplitterAbstractPopulationVertexNeuronsSynapses(
 
     @overrides(AbstractSplitterCommon.get_out_going_vertices)
     def get_out_going_vertices(self, edge, outgoing_edge_partition):
-        return {v: [MachineEdge] for v in self.__neuron_vertices}
+        return self.__outgoing_vertices
 
     @overrides(AbstractSplitterCommon.get_in_coming_vertices)
     def get_in_coming_vertices(
@@ -568,8 +578,7 @@ class SplitterAbstractPopulationVertexNeuronsSynapses(
         index = self.__next_synapse_index
         self.__next_synapse_index = (
             (self.__next_synapse_index + 1) % self.__n_synapse_vertices)
-        return {self.__synapse_verts_by_neuron[neuron][index]: [MachineEdge]
-                for neuron in self.__neuron_vertices}
+        return self.__incoming_vertices[index]
 
     @overrides(AbstractSplitterCommon.machine_vertices_for_recording)
     def machine_vertices_for_recording(self, variable_to_record):
