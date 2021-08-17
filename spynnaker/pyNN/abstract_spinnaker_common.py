@@ -26,7 +26,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utility_models import CommandSender
 from spinn_front_end_common.utilities.utility_objs import ExecutableFinder
 from spynnaker.pyNN import extra_algorithms, model_binaries
-from spynnaker.pyNN.config_setup import CONFIG_FILE_NAME, reset_configs
+from spynnaker.pyNN.config_setup import CONFIG_FILE_NAME, setup_configs
 from spynnaker.pyNN.utilities import constants
 from spynnaker.pyNN.utilities.extracted_data import ExtractedData
 from spynnaker import __version__ as version
@@ -43,20 +43,15 @@ class AbstractSpiNNakerCommon(AbstractSpinnakerBase):
         "__id_counter",
         "__live_spike_recorder",
         "__min_delay",
-        "__max_delay",
         "__neurons_per_core_set",
         "_populations",
         "_projections"]
 
     __EXECUTABLE_FINDER = ExecutableFinder()
 
-    @classmethod
-    def extended_config_path(cls):
-        return os.path.join(os.path.dirname(__file__), CONFIG_FILE_NAME)
-
     def __init__(
             self, graph_label, database_socket_addresses, n_chips_required,
-            n_boards_required, timestep, max_delay, min_delay, hostname,
+            n_boards_required, timestep, min_delay, hostname,
             user_extra_algorithm_xml_path=None, user_extra_mapping_inputs=None,
             user_extra_algorithms_pre_run=None, time_scale_factor=None,
             extra_post_run_algorithms=None, extra_mapping_algorithms=None,
@@ -73,7 +68,6 @@ class AbstractSpiNNakerCommon(AbstractSpinnakerBase):
         :param timestep:
             machine_time_step but in milli seconds. If None uses the cfg value
         :type timestep: float or None
-        :param float max_delay:
         :param float min_delay:
         :param str hostname:
         :param user_extra_algorithm_xml_path:
@@ -94,6 +88,8 @@ class AbstractSpiNNakerCommon(AbstractSpinnakerBase):
         :type front_end_versions: list(tuple(str,str)) or None
         """
         # pylint: disable=too-many-arguments, too-many-locals
+
+        setup_configs()
 
         # add model binaries
         self.__EXECUTABLE_FINDER.add_path(
@@ -121,7 +117,6 @@ class AbstractSpiNNakerCommon(AbstractSpinnakerBase):
 
         # timing parameters
         self.__min_delay = None
-        self.__max_delay = max_delay
 
         self.__neurons_per_core_set = set()
 
@@ -139,7 +134,6 @@ class AbstractSpiNNakerCommon(AbstractSpinnakerBase):
             front_end_versions=versions)
 
         # update inputs needed by the machine level calls.
-        self.update_extra_inputs({'UserDefinedMaxDelay': self.__max_delay})
 
         extra_mapping_inputs = dict()
         extra_mapping_inputs["SynapticExpanderReadIOBuf"] = \
@@ -410,15 +404,15 @@ class AbstractSpiNNakerCommon(AbstractSpinnakerBase):
             receivers = self._locate_receivers_from_projections(
                 projection_to_attribute_map.keys(),
                 self.get_generated_output(
-                    "MemoryMCGatherVertexToEthernetConnectedChipMapping"),
+                    "VertexToEthernetConnectedChipMapping"),
                 self.get_generated_output(
-                    "MemoryExtraMonitorToChipMapping"))
+                    "ExtraMonitorToChipMapping"))
 
         # set up the router timeouts to stop packet loss
         for data_receiver, extra_monitor_cores in receivers:
             data_receiver.load_system_routing_tables(
                 self._txrx,
-                self.get_generated_output("MemoryExtraMonitorVertices"),
+                self.get_generated_output("ExtraMonitorVertices"),
                 self._placements)
             data_receiver.set_cores_for_data_streaming(
                 self._txrx, list(extra_monitor_cores), self._placements)
@@ -438,7 +432,7 @@ class AbstractSpiNNakerCommon(AbstractSpinnakerBase):
                 self._txrx, list(extra_monitor_cores), self._placements)
             data_receiver.load_application_routing_tables(
                 self._txrx,
-                self.get_generated_output("MemoryExtraMonitorVertices"),
+                self.get_generated_output("ExtraMonitorVertices"),
                 self._placements)
 
         # return data items
@@ -499,6 +493,3 @@ class AbstractSpiNNakerCommon(AbstractSpinnakerBase):
         :param int new_value: new value for id_counter
         """
         self.__id_counter = new_value
-
-
-reset_configs()
