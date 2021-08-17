@@ -300,7 +300,7 @@ class SplitterAbstractPopulationVertexNeuronsSynapses(
         self.__incoming_vertices = [
             {self.__synapse_verts_by_neuron[neuron][index]: [MachineEdge]
                 for neuron in self.__neuron_vertices}
-            for index in self.__n_synapse_vertices]
+            for index in range(self.__n_synapse_vertices)]
         return True
 
     def __add_poisson_multicast(
