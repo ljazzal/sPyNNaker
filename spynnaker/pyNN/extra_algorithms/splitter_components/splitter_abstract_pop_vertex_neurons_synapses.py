@@ -100,8 +100,6 @@ class SplitterAbstractPopulationVertexNeuronsSynapses(
         "__slices",
         # The next synapse core to use for an incoming machine edge
         "__next_synapse_index",
-        # The outgoing vertices cached
-        "__outgoing_vertices",
         # The incoming vertices cached
         "__incoming_vertices"]
 
@@ -295,7 +293,6 @@ class SplitterAbstractPopulationVertexNeuronsSynapses(
             resource_tracker.allocate_constrained_group_resources(
                 all_resources)
 
-        self.__outgoing_vertices = [self.__neuron_vertices]
         self.__incoming_vertices = [
             [self.__synapse_verts_by_neuron[neuron][index]
                 for neuron in self.__neuron_vertices]
@@ -560,7 +557,7 @@ class SplitterAbstractPopulationVertexNeuronsSynapses(
 
     @overrides(AbstractSplitterCommon.get_out_going_vertices)
     def get_out_going_vertices(self, outgoing_edge_partition):
-        return self.__outgoing_vertices
+        return self.__neuron_vertices
 
     @overrides(AbstractSplitterCommon.get_in_coming_vertices)
     def get_in_coming_vertices(self, outgoing_edge_partition):
