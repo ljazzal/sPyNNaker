@@ -17,7 +17,6 @@ from pacman.exceptions import PacmanConfigurationException
 from pacman.model.constraints.partitioner_constraints import (
     MaxVertexAtomsConstraint, FixedVertexAtomsConstraint,
     AbstractPartitionerConstraint)
-from pacman.model.graphs.machine import MachineEdge
 from pacman.model.resources import (
     ResourceContainer, DTCMResource, CPUCyclesPerTickResource,
     MultiRegionSDRAM)
@@ -99,13 +98,12 @@ class SplitterAbstractPopulationVertexSlice(
             .create_machine_vertices(resource_tracker, machine_graph)
 
     @overrides(AbstractSplitterSlice.get_out_going_vertices)
-    def get_out_going_vertices(self, edge, outgoing_edge_partition):
-        return self._get_map([MachineEdge])
+    def get_out_going_vertices(self, outgoing_edge_partition):
+        return self._governed_app_vertex.machine_vertices
 
     @overrides(AbstractSplitterSlice.get_in_coming_vertices)
-    def get_in_coming_vertices(
-            self, edge, outgoing_edge_partition, src_machine_vertex):
-        return self._get_map([MachineEdge])
+    def get_in_coming_vertices(self, outgoing_edge_partition):
+        return self._governed_app_vertex.machine_vertices
 
     @overrides(AbstractSplitterSlice.create_machine_vertex)
     def create_machine_vertex(
