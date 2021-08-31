@@ -559,7 +559,7 @@ class SplitterAbstractPopulationVertexNeuronsSynapses(
         return self.__get_fixed_slices(), True
 
     @overrides(AbstractSplitterCommon.get_out_going_vertices)
-    def get_out_going_vertices(self, edge, outgoing_edge_partition):
+    def get_out_going_vertices(self, outgoing_edge_partition):
         return self.__outgoing_vertices
 
     @overrides(AbstractSplitterCommon.get_in_coming_vertices)
