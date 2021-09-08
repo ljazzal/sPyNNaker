@@ -1,6 +1,5 @@
 import numpy
-from pacman.executor.injection_decorator import inject_items
-from pacman.model.decorators.overrides import overrides
+from spinn_utilities.overrides import overrides
 from data_specification.enums import DataType
 from spynnaker.pyNN.models.neuron.synapse_types import AbstractSynapseType
 
@@ -29,7 +28,7 @@ class MySynapseType(AbstractSynapseType):
             my_inh_init):
 
         # TODO: Update the data types - this must match the struct exactly
-        super(MySynapseType, self).__init__([
+        super().__init__([
             DataType.U032,  # my_exc_decay
             DataType.U032,  # my_exc_init
             DataType.U032,  # my_inh_decay
@@ -112,7 +111,6 @@ class MySynapseType(AbstractSynapseType):
         state_variables[EXC_INIT] = self._my_exc_init
         state_variables[INH_INIT] = self._my_inh_init
 
-    @inject_items({"ts": "DefaultMachineTimeStep"})
     def get_values(self, parameters, state_variables, vertex_slice, ts):
         # TODO: Return, in order of the struct, the values from the parameters,
         # state variables, or other

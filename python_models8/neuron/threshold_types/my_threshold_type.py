@@ -25,7 +25,7 @@ class MyThresholdType(AbstractThresholdType):
             threshold_value, my_threshold_parameter):
 
         # TODO: Update the data types - this must match the structs exactly
-        super(MyThresholdType, self).__init__([
+        super().__init__([
             DataType.S1615,  # threshold_value
             DataType.S1615,  # my_param
         ])
@@ -66,7 +66,7 @@ class MyThresholdType(AbstractThresholdType):
         # change
         pass
 
-    def get_values(self, parameters, state_variables, vertex_slice):
+    def get_values(self, parameters, state_variables, vertex_slice, ts):
         # TODO: Return, in order of the struct, the values from the parameters,
         # state variables, or other
         return [parameters[THRESHOLD_VALUE],

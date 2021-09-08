@@ -22,7 +22,7 @@ class MyAdditionalInput(AbstractAdditionalInput):
             my_additional_input_parameter, input_current):
 
         # TODO: Update the data types - this must match the struct exactly
-        super(MyAdditionalInput, self).__init__([
+        super().__init__([
             DataType.S1615,  # my_parameter
             DataType.S1615,  # input_current
         ])
@@ -63,7 +63,7 @@ class MyAdditionalInput(AbstractAdditionalInput):
         # change
         state_variables[INPUT_CURRENT] = self._input_current
 
-    def get_values(self, parameters, state_variables, vertex_slice):
+    def get_values(self, parameters, state_variables, vertex_slice, ts):
         # TODO: Return, in order of the struct, the values from the parameters,
         # state variables, or other
         return [parameters[MY_ADDITIONAL_INPUT_PARAMETER],
