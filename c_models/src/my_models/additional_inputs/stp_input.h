@@ -26,7 +26,7 @@ static input_t additional_input_get_input_value_as_current(
         state_t membrane_voltage) {
     use(membrane_voltage);
 
-    additional_input->u *= (1 - additional_input->U) * additional_input->exp_tau_F;
+    additional_input->u *= additional_input->exp_tau_F;
     // additional_input->u += additional_input->U;
 
     // Update input current resulting from STP process
@@ -34,9 +34,9 @@ static input_t additional_input_get_input_value_as_current(
     // additional_input->I_stp += additional_input->A * additional_input->u * additional_input->x;
 
     // Resources remaining after neurotransmitter depletion (x)
-    additional_input->x *= (1 - additional_input->u) * additional_input->exp_tau_D;
+    additional_input->x *= additional_input->exp_tau_D;
+    additional_input->x += 1 - additional_input->exp_tau_D;
     // additional_input->x += 1 - additional_input->exp_tau_D;
-    // additional_input->h = h;
     return additional_input->I_stp;
 }
 
@@ -46,16 +46,17 @@ static input_t additional_input_get_input_value_as_current(
 static void additional_input_has_spiked(
         additional_input_t *additional_input) {
     // Resources ready update (u)
-    // additional_input->u *= (1-additional_input->U) * additional_input->exp_tau_F;
+    // additional_input->u += additional_input->U;
+    additional_input->u *= -additional_input->U * additional_input->exp_tau_F;
     additional_input->u += additional_input->U;
 
     // // Update input current resulting from STP process
-    // additional_input->I_stp *= additional_input->exp_tau_syn;
+    // additional_input->I_stp += additional_input->A * additional_input->u * additional_input->x;
     additional_input->I_stp += additional_input->A * additional_input->u * additional_input->x;
 
     // // Resources remaining after neurotransmitter depletion (x)
-    // additional_input->x *= (1-additional_input->u) * additional_input->exp_tau_D;
-    additional_input->x += 1 - additional_input->exp_tau_D;
+    // additional_input->x += 1 - additional_input->exp_tau_D;
+    additional_input->x *= -additional_input->u * additional_input->exp_tau_D;
 }
 
 #endif // _STP_INPUT_H_

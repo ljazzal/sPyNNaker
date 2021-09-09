@@ -20,7 +20,7 @@ n_neurons = 1
 i_offset = 0.0
 
 # Set the weight of input spikes
-weight = 3.0
+weight = 2.0
 
 # Set the times at which to input a spike
 spike_times = np.arange(0, run_time, 10)
@@ -31,14 +31,27 @@ spikeArray = {"spike_times": spike_times}
 input_pop = p.Population(
     n_neurons, p.SpikeSourceArray(**spikeArray), label="input")
 
+poisson_input = p.Population(10, p.SpikeSourcePoisson(rate=30), label="poisson")
+poisson_input2 = p.Population(10, p.SpikeSourcePoisson(rate=40), label="poisson2")
+
 lif_stp_pop = p.Population(
-    n_neurons, IFCurrExpStp(U=0.05, tau_f=250, tau_d=50),
+    n_neurons, IFCurrExpStp(U=0.05, tau_f=750, tau_d=30),
     label="if_curr_exp_stp_pop")
 
 p.Projection(
     input_pop, lif_stp_pop,
     p.OneToOneConnector(), receptor_type='excitatory',
     synapse_type=p.StaticSynapse(weight=weight))
+
+p.Projection(
+    poisson_input, lif_stp_pop, p.FixedProbabilityConnector(p_connect=0.5),
+    receptor_type='excitatory', synapse_type=p.StaticSynapse(weight=2.5)
+)
+
+p.Projection(
+    poisson_input2, lif_stp_pop, p.FixedProbabilityConnector(p_connect=0.5),
+    receptor_type='inhibitory', synapse_type=p.StaticSynapse(weight=-1.0)
+)
 
 input_pop.record(['spikes'])
 lif_stp_pop.record(['v', 'gsyn_exc', 'gsyn_inh', 'i_ext', 'spikes'])
