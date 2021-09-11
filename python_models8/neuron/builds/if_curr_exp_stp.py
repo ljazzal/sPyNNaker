@@ -20,7 +20,7 @@ from spynnaker.pyNN.models.neuron.neuron_models import (
 from spynnaker.pyNN.models.neuron.synapse_types import SynapseTypeExponential
 from spynnaker.pyNN.models.neuron.input_types import InputTypeCurrent
 from spynnaker.pyNN.models.neuron.threshold_types import ThresholdTypeStatic
-from python_models8.neuron.additional_inputs.stp_input import StpInput
+from python_models8.neuron.input_types.stp_input_current import StpInputCurrent
 
 
 class IFCurrExpStp(AbstractPyNNNeuronModelStandard):
@@ -42,14 +42,11 @@ class IFCurrExpStp(AbstractPyNNNeuronModelStandard):
             v, v_rest, tau_m, cm, i_offset, v_reset, tau_refrac)
         synapse_type = SynapseTypeExponential(
             tau_syn_E, tau_syn_I, isyn_exc, isyn_inh)
-        input_type = InputTypeCurrent()
+        input_type = StpInputCurrent(u, x, i_stp, A, U, tau_f, tau_d, tau_syn)
         threshold_type = ThresholdTypeStatic(v_thresh)
-        additional_input_type = StpInput(
-            u, x, i_stp, A, U, tau_f, tau_d, tau_syn)
 
         super().__init__(
             model_name="IF_curr_exp_stp",
             binary="IF_curr_exp_stp.aplx",
             neuron_model=neuron_model, input_type=input_type,
-            synapse_type=synapse_type, threshold_type=threshold_type,
-            additional_input_type=additional_input_type)
+            synapse_type=synapse_type, threshold_type=threshold_type)
