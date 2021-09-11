@@ -20,46 +20,60 @@ n_neurons = 1
 i_offset = 0.0
 
 # Set the weight of input spikes
-weight = 2.0
+weight = 0.1
 
 # Set the times at which to input a spike
-spike_times = np.arange(0, run_time, 10)
+spike_times = np.arange(0, run_time / 4, 20)
+spike_times2 = np.arange(run_time - run_time / 4, run_time, 20)
 
 p.setup(time_step)
 
 spikeArray = {"spike_times": spike_times}
+spikeArray2 = {"spike_times": spike_times2}
 input_pop = p.Population(
     n_neurons, p.SpikeSourceArray(**spikeArray), label="input")
+input_pop2 = p.Population(
+    n_neurons, p.SpikeSourceArray(**spikeArray2), label="input")
 
-poisson_input = p.Population(10, p.SpikeSourcePoisson(rate=30), label="poisson")
-poisson_input2 = p.Population(10, p.SpikeSourcePoisson(rate=40), label="poisson2")
+poisson_input = p.Population(1, p.SpikeSourcePoisson(rate=200), label="poisson")
+poisson_input2 = p.Population(1, p.SpikeSourcePoisson(rate=50), label="poisson2")
 
 lif_stp_pop = p.Population(
-    n_neurons, IFCurrExpStp(U=0.05, tau_f=750, tau_d=30),
+    n_neurons, IFCurrExpStp(U=0.05, tau_f=750, tau_d=10, A=10.0, tau_syn=1, tau_syn_E=1, tau_m=5),
     label="if_curr_exp_stp_pop")
 
+# dc_input = p.DCSource(amplitude=2.5, start=0, stop=run_time - run_time / 4)
+# lif_stp_pop.inject(dc_input)
+
+
+# p.Projection(
+#     input_pop, lif_stp_pop,
+#     p.OneToOneConnector(), receptor_type='excitatory',
+#     synapse_type=p.StaticSynapse(weight=weight))
+
 p.Projection(
-    input_pop, lif_stp_pop,
+    input_pop2, lif_stp_pop,
     p.OneToOneConnector(), receptor_type='excitatory',
     synapse_type=p.StaticSynapse(weight=weight))
 
 p.Projection(
-    poisson_input, lif_stp_pop, p.FixedProbabilityConnector(p_connect=0.5),
+    poisson_input, lif_stp_pop, p.FixedProbabilityConnector(p_connect=0.99),
     receptor_type='excitatory', synapse_type=p.StaticSynapse(weight=2.5)
 )
 
-p.Projection(
-    poisson_input2, lif_stp_pop, p.FixedProbabilityConnector(p_connect=0.5),
-    receptor_type='inhibitory', synapse_type=p.StaticSynapse(weight=-1.0)
-)
+# p.Projection(
+#     poisson_input2, lif_stp_pop, p.FixedProbabilityConnector(p_connect=0.5),
+#     receptor_type='inhibitory', synapse_type=p.StaticSynapse(weight=-1.0)
+# )
 
-input_pop.record(['spikes'])
+# input_pop.record(['spikes'])
+poisson_input.record(['spikes'])
 lif_stp_pop.record(['v', 'gsyn_exc', 'gsyn_inh', 'i_ext', 'spikes'])
 
 p.run(run_time)
 
 
-input = input_pop.get_data('spikes').segments[0].spiketrains
+input = poisson_input.get_data('spikes').segments[0].spiketrains
 data = lif_stp_pop.get_data()
 spikes = lif_stp_pop.get_data('spikes').segments[0].spiketrains
 v_lif_stp_pop = lif_stp_pop.get_data('v')
