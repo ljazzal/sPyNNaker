@@ -15,8 +15,11 @@
 typedef struct {
     int32_t min_weight;
     int32_t max_weight;
-
-    int32_t my_parameter;
+    int32_t a2_plus;       // maximum weight to add during potentiation
+    int32_t a2_minus;      // maximum weight to remove during depression
+    // int32_t my_parameter;
+    int32_t A;
+    int32_t U;
 
     // TODO: Put in all required parameters
 
@@ -30,6 +33,9 @@ typedef struct {
 
     int32_t potentiation;
     int32_t depression;
+    int32_t u;
+    int32_t x;
+    int32_t y;
 
     const plasticity_weight_region_data_t *weight_region;
 
@@ -53,6 +59,9 @@ static inline weight_state_t weight_get_initial(
         .initial_weight = (int32_t) weight,
         .potentiation = 0,
         .depression = 0,
+        .u = 0,
+        .x = 1,
+        .y = 0,
         .weight_region = &plasticity_weight_region_data[synapse_type]
     };
 }
@@ -78,6 +87,23 @@ static inline weight_state_t weight_one_term_apply_potentiation(
 }
 
 //---------------------------------------
+static inline weight_state_t weight_update_synaptic_resources(
+        weight_state_t state, int32_t Puu, int32_t Pyy, int32_t Pzz, int32_t Pxy, int32_t Pxz) {
+
+    // TODO: Perform intermediate operations in relation to potentiation
+    // Note: Can save up to perform complex operations until the end
+    int32_t scale = maths_fixed_mul16(
+            state.weight_region->U * state.u - state.weight_region->min_weight,
+            state.weight_region->a2_minus, state.weight_multiply_right_shift);
+
+    // Multiply scale by facilitation and subtract
+    // **NOTE** using standard STDP fixed-point format handles format conversion
+    state.u -= STDP_FIXED_MUL_16X16(scale, facilitation);
+    state.u += state.weight_region->U;
+    return state;
+}
+
+//---------------------------------------
 static inline weight_t weight_get_final(weight_state_t new_state) {
 
     // TODO: Perform operations to get the final weight from the intermediate
@@ -91,13 +117,14 @@ static inline weight_t weight_get_final(weight_state_t new_state) {
             new_state.depression * new_state.weight_region->my_parameter;
 
     int32_t new_weight = new_state.initial_weight + potentiation - depression;
+    // int32_t new_weight = new_state.initial_weight;
 
     // Clamp new weight
     new_weight = MIN(
             new_state.weight_region->max_weight,
             MAX(new_weight, new_state.weight_region->min_weight));
 
-    log_debug("old_weight:%u, potentiation:%d, depression:%d, "
+    log_info("old_weight:%u, potentiation:%d, depression:%d, "
             "scaled potentiation:%d, scaled depression:%d, new_weight:%d",
             new_state.initial_weight, new_state.potentiation,
             new_state.depression, potentiation, depression, new_weight);
