@@ -10,8 +10,9 @@ class TsodyksMarkramWeightDependence(AbstractHasAPlusAMinus, AbstractWeightDepen
         # "_my_weight_parameter",
         "_w_max",
         "_w_min",
-        "_A_plus",
-        "_A_minus",
+
+        "_u",
+        "_x",
         "_A",
         "_U"]
 
@@ -20,17 +21,14 @@ class TsodyksMarkramWeightDependence(AbstractHasAPlusAMinus, AbstractWeightDepen
 
     def __init__(
             self,
-            A=1.0, U=0.5, w_min=0.0, w_max=1.0, A_plus=1.0, A_minus=1.0):
-            # # TODO: update the parameters
-            # w_min=0.0, w_max=1.0, my_weight_parameter=0.1):
+            u=0.0, x=1.0, A=1.0, U=0.5, w_min=0.0, w_max=1.0, A_plus=1.0, A_minus=1.0):
         super().__init__()
 
         # TODO: Store any parameters
         self._w_min = w_min
         self._w_max = w_max
-        self._A_minus = A_minus
-        self._A_plus = A_plus
-        # self._my_weight_parameter = my_weight_parameter
+        self._u = u
+        self._x = x
         self._A = A
         self._U = U
 
@@ -52,13 +50,21 @@ class TsodyksMarkramWeightDependence(AbstractHasAPlusAMinus, AbstractWeightDepen
     def w_max(self, w_max):
         self._w_max = w_max
 
-    # @property
-    # def my_weight_parameter(self):
-    #     return self._my_weight_parameter
+    @property
+    def u(self):
+        return self._u
 
-    # @my_weight_parameter.setter
-    # def my_weight_parameter(self, my_weight_parameter):
-    #     self._my_weight_parameter = my_weight_parameter
+    @u.setter
+    def u(self, u):
+        self._u = u
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, x):
+        self._x = x
 
     @property
     def A(self):
@@ -82,17 +88,11 @@ class TsodyksMarkramWeightDependence(AbstractHasAPlusAMinus, AbstractWeightDepen
         if not isinstance(weight_dependence, TsodyksMarkramWeightDependence):
             return False
 
-        # TODO: update to check parameters are equal
-        # return (
-        #     (self._w_min == weight_dependence._w_min) and
-        #     (self._w_max == weight_dependence._w_max) and
-        #     (self._my_weight_parameter ==
-        #      weight_dependence._my_weight_parameter))
         return (
             (self._w_min == weight_dependence._w_min) and
             (self._w_max == weight_dependence._w_max) and
-            (self._A_plus == weight_dependence._A_plus) and
-            (self._A_minus == weight_dependence._A_minus) and
+            (self._u == weight_dependence._u) and
+            (self._x == weight_dependence._x) and
             (self._A == weight_dependence._A) and
             (self._U == weight_dependence._U))
 
@@ -129,9 +129,9 @@ class TsodyksMarkramWeightDependence(AbstractHasAPlusAMinus, AbstractWeightDepen
             spec.write_value(
                 data=int(round(self._w_max * w)), data_type=DataType.INT32)
             spec.write_value(
-                data=int(round(self._A_plus * w)), data_type=DataType.INT32)
+                data=int(round(self._u * w)), data_type=DataType.INT32)
             spec.write_value(
-                data=int(round(self._A_minus * w)), data_type=DataType.INT32)
+                data=int(round(self._x * w)), data_type=DataType.INT32)
 
             # Write my parameter as an appropriately scaled fixed-point number
             spec.write_value(
@@ -157,5 +157,4 @@ class TsodyksMarkramWeightDependence(AbstractHasAPlusAMinus, AbstractWeightDepen
 
     @overrides(AbstractWeightDependence.get_parameter_names)
     def get_parameter_names(self):
-        # return ['w_min', 'w_max', 'my_weight_parameter']
-        return ['A', 'U', 'w_min', 'w_max', 'A_plus', 'A_minus']
+        return ['A', 'U', 'u', 'x', 'w_min', 'w_max']#, 'A_plus', 'A_minus']

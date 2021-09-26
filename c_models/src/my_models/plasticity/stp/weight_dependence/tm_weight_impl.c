@@ -25,7 +25,10 @@ address_t weight_initialise(
     for (uint32_t s = 0; s < n_synapse_types; s++) {
         plasticity_weight_region_data[s].min_weight = config[s].min_weight;
         plasticity_weight_region_data[s].max_weight = config[s].max_weight;
-        plasticity_weight_region_data[s].my_parameter = config[s].my_parameter;
+        plasticity_weight_region_data[s].u = config[s].u;
+        plasticity_weight_region_data[s].x = config[s].x;
+        plasticity_weight_region_data[s].A = config[s].A;
+        plasticity_weight_region_data[s].U = config[s].U;
 
         // TODO: Copy any other data
     }
