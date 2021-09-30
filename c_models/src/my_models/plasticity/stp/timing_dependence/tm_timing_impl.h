@@ -91,7 +91,7 @@ static inline update_state_t timing_apply_pre_spike(
 
     if (last_pre_time > 0) {
         int32_t exp_tau_d = maths_lut_exponential_decay(time_since_last_pre, tau_d_lookup);
-        int32_t decayed_x = STDP_FIXED_MUL_16X16(STDP_FIXED_POINT_ONE - previous_state.weight_region->u, exp_tau_d); 
+        int32_t decayed_x = STDP_FIXED_MUL_16X16(previous_state.weight_region-> x, STDP_FIXED_MUL_16X16(STDP_FIXED_POINT_ONE - previous_state.weight_region->u, exp_tau_d)); 
         previous_state.weight_region->x = decayed_x;
         previous_state.weight_region->x += (STDP_FIXED_POINT_ONE - exp_tau_d);
 
