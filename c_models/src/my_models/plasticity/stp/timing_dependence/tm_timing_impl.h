@@ -85,19 +85,25 @@ static inline update_state_t timing_apply_pre_spike(
         STDP_FIXED_MUL_16X16(previous_state.weight_region->u,
         maths_lut_exponential_decay(time_since_last_pre, tau_f_lookup));
     previous_state.weight_region->u = decayed_u;
+    int32_t initial_u = previous_state.weight_region->u;
+
     int32_t du = STDP_FIXED_MUL_16X16(previous_state.weight_region->U, STDP_FIXED_POINT_ONE - previous_state.weight_region->u);
     previous_state.weight_region->u += du;
+    int32_t new_u = previous_state.weight_region->u;
     previous_state.new_weight = STDP_FIXED_MUL_16X16(previous_state.weight_region->u, previous_state.weight_region->x);
 
-    if (last_pre_time > 0) {
-        int32_t exp_tau_d = maths_lut_exponential_decay(time_since_last_pre, tau_d_lookup);
-        int32_t decayed_x = STDP_FIXED_MUL_16X16(previous_state.weight_region-> x, STDP_FIXED_MUL_16X16(STDP_FIXED_POINT_ONE - previous_state.weight_region->u, exp_tau_d)); 
-        previous_state.weight_region->x = decayed_x;
-        previous_state.weight_region->x += (STDP_FIXED_POINT_ONE - exp_tau_d);
+    int32_t exp_tau_d = (last_pre_time == 0) ? STDP_FIXED_POINT_ONE : STDP_FIXED_MUL_16X16(STDP_FIXED_POINT_ONE, maths_lut_exponential_decay(time_since_last_pre, tau_d_lookup));
 
-        log_info("\t\t\ttime_since_last_pre_event=%u, u=%u, decayed_u=%d, x=%u, decayed_x=%d, exp_tau_d=%d\n",
-            time_since_last_pre, previous_state.weight_region->u, decayed_u, previous_state.weight_region->x, decayed_x, exp_tau_d);
-    }
+    int32_t decayed_x = STDP_FIXED_MUL_16X16(STDP_FIXED_POINT_ONE - previous_state.weight_region->x, exp_tau_d); 
+    previous_state.weight_region->x = STDP_FIXED_POINT_ONE - decayed_x;
+    int32_t initial_x = previous_state.weight_region->x;
+    
+    previous_state.weight_region->x -= previous_state.new_weight;
+    previous_state.weight_region->x = MIN(previous_state.weight_region->x, STDP_FIXED_POINT_ONE);
+    int32_t new_x = previous_state.weight_region->x;
+    
+    log_info("time_since_last_pre_event=%u, u0=%u, u=%u, x0=%u, x=%u, w=%u, decayed_x=%u, exp_tau_d=%d\n",
+        time_since_last_pre, initial_u, new_u, initial_x, new_x, previous_state.new_weight, decayed_x, exp_tau_d);
     // return weight_one_term_apply_potentiation(previous_state, decayed_u);
     return previous_state;
 }

@@ -24,7 +24,7 @@ from python_models8.neuron.plasticity.stdp.weight_dependence\
 
 
 # Set the run time of the execution
-run_time = 500
+run_time = 300
 
 # Set the time step of the simulation in milliseconds
 time_step = 1.0
@@ -39,8 +39,8 @@ i_offset = 0.0
 weight = 1.0
 
 # Set the times at which to input a spike
-# spike_times = range(0, run_time, 100)
-spike_times = np.array([10., 80., 140, 190, 230., 260., 280., 290., 300., 310, 320., 480, 490])#], 340, 360, 370, 710, 720, 730, 740, 780])
+# spike_times = np.array([10., 80., 140, 190, 230., 260., 280., 290., 300., 310, 320., 480, 490])#], 340, 360, 370, 710, 720, 730, 740, 780])
+spike_times = np.array([20, 90, 150, 195, 230])
 
 p.setup(time_step)
 
@@ -48,24 +48,13 @@ spikeArray = {"spike_times": spike_times}
 input_pop = p.Population(
     n_neurons, p.SpikeSourceArray(**spikeArray), label="input")
 
-myModelCurrExpMyInputTypeParams = {
-    "my_input_parameter": 1.0,
-    "my_multiplicator": 1.0
-}
-
 my_model_stdp_pop = p.Population(
-    # n_neurons, MyModelCurrExp(i_offset=i_offset), label="my_model_pop")
-    n_neurons, p.IF_curr_exp(i_offset=i_offset, tau_syn_E=3.0, tau_syn_I=3.0), label="my_model_pop")
+    n_neurons, p.IF_curr_exp(i_offset=i_offset, tau_syn_E=20.0, tau_syn_I=20.0), label="my_model_pop")
 stdp = p.STDPMechanism(
-    # timing_dependence=MyTimingDependence(
-    #     my_potentiation_parameter=20.0,
-    #     my_depression_parameter=10.0),
     timing_dependence=TsodyksMarkramTimingDependence(
-        # tau_f=17.0, tau_d=671.0),
-        tau_f=17.0, tau_d=671.0),
-    # weight_dependence=MyWeightDependence(
-    #     w_min=0.0, w_max=10.0, my_weight_parameter=1.0), weight=weight)
-    weight_dependence=TsodyksMarkramWeightDependence(U=0.5,
+        tau_f=50.0, tau_d=750.0),
+        # tau_f=800.0, tau_d=50.0),
+    weight_dependence=TsodyksMarkramWeightDependence(A=1.0, U=0.5,
         w_min=0.0, w_max=10.0), weight=weight)
 
 stdp_connection = p.Projection(
@@ -117,20 +106,29 @@ filepath = os.path.join("./reports", report, "run_1", "provenance_data", "app_pr
 with open(filepath, 'r') as fid:
     lines = fid.readlines()
 
-suffix = "[INFO] (tm_weight_impl.h: 91):"
+suffix_weight = "[INFO] (tm_weight_impl.h:"
+suffix_timing = "[INFO] (tm_timing_impl.h:"
 u = []
 x = []
+w = []
 for l in lines:
-    if l.startswith(suffix):
+    if l.startswith(suffix_timing):
         parsed = l.split(" ")
-        u.append(int(parsed[4][2:-1]))
-        x.append(int(parsed[5][2:-1]))
+        u.append(int(parsed[4][3:-1]))
+        u.append(int(parsed[5][2:-1]))
+        x.append(int(parsed[6][3:-1]))
+        x.append(int(parsed[7][2:-1]))
+    elif l.startswith(suffix_weight):
+        parsed = l.split(" ")
+        w.append(int(parsed[3][2:-1]))
 
 # Plotting
-spks = np.array(input_spikes[0])
+spikes = np.array(input_spikes[0])
+spks = np.repeat(spikes, 2)
 fig = plt.figure()
-plt.plot(spks, u, label='u')
-plt.plot(spks, x, label='x')
+plt.plot(spks, u, linewidth=2, label='u')
+plt.plot(spks, x, linewidth=2, label='x')
+plt.scatter(spikes, w, c='c', marker="o", label='w', alpha=0.5)
 plt.legend()
 
 plt.show()
