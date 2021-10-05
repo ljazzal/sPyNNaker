@@ -56,8 +56,10 @@ static inline weight_state_t update_resources_available(
 
     // Update the fraction of available resources ready for use
     state.weight_region->u = decayed_u;
+    log_info("u=%u\n", state.weight_region->u);
     // int32_t initial_u = previous_state.weight_region->u;
     state.weight_region->u += STDP_FIXED_MUL_16X16(state.weight_region->U, STDP_FIXED_POINT_ONE - state.weight_region->u);
+    log_info("u=%u\n", state.weight_region->u);
     // int32_t new_u = previous_state.weight_region->u;
     state.new_weight = STDP_FIXED_MUL_16X16(state.weight_region->u, state.weight_region->x);
     return state;
@@ -69,10 +71,12 @@ static inline weight_state_t update_resources_remaining(
 
     // Update fraction of resources remaining
     state.weight_region->x = STDP_FIXED_POINT_ONE - decayed_x;
+    log_info("x=%u\n", state.weight_region->x);
     // int32_t initial_x = previous_state.weight_region->x;
     state.weight_region->x -= state.new_weight;
-    // Ensure resource fractions remaining doesn't exceed 1
+    // Ensure resource fractions remaining don't exceed 1
     state.weight_region->x = MIN(state.weight_region->x, STDP_FIXED_POINT_ONE);
+    log_info("x=%u\n", state.weight_region->x);
     // int32_t new_x = state.weight_region->x;
     return state;
 }
@@ -95,9 +99,6 @@ static inline weight_t weight_get_final(weight_state_t new_state) {
 
     log_info("w:%u, w_:%u",
             new_weight, new_state.new_weight);
-    // log_info("old_weight:%u, u:%d, x:%d, new_weight_pre:%d, new_weight_post:%d",
-    //         new_state.initial_weight, new_state.weight_region->u,
-    //         new_state.weight_region->x, new_state.new_weight, new_weight);
 
     return (weight_t) new_weight;
 }

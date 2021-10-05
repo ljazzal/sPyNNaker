@@ -53,8 +53,8 @@ my_model_stdp_pop = p.Population(
 stdp = p.STDPMechanism(
     timing_dependence=TsodyksMarkramTimingDependence(
         tau_f=50.0, tau_d=750.0),
-        # tau_f=800.0, tau_d=50.0),
-    weight_dependence=TsodyksMarkramWeightDependence(A=1.0, U=0.5,
+        # tau_f=750.0, tau_d=50.0),
+    weight_dependence=TsodyksMarkramWeightDependence(A=1.0, U=0.45,
         w_min=0.0, w_max=10.0), weight=weight)
 
 stdp_connection = p.Projection(
@@ -94,7 +94,7 @@ Figure(
           yticks=True, xlim=(0, run_time)),
     title="Simple my model examples",
     annotations="Simulated with {}".format(p.name())
-).save('tm_synapse.png')
+).save('tm_std_synapse.png')
 
 # Extracting data from logs
 reports = sorted(os.listdir("./reports"), key=lambda x: datetime.datetime.strptime(x, '%Y-%m-%d-%H-%M-%S-%f'))
@@ -112,24 +112,37 @@ u = []
 x = []
 w = []
 for l in lines:
-    if l.startswith(suffix_timing):
+    if l.startswith(suffix_weight):
         parsed = l.split(" ")
-        u.append(int(parsed[4][3:-1]))
-        u.append(int(parsed[5][2:-1]))
-        x.append(int(parsed[6][3:-1]))
-        x.append(int(parsed[7][2:-1]))
-    elif l.startswith(suffix_weight):
-        parsed = l.split(" ")
-        w.append(int(parsed[3][2:-1]))
+        if parsed[3][0] == "u":
+            u.append(int(parsed[3][2:-1]))
+        elif parsed[3][0] == "x":
+            x.append(int(parsed[3][2:-1]))
+        else:
+            w.append(int(parsed[3][2:-1]))
 
 # Plotting
+fig, ax = plt.subplots(ncols=1, nrows=4)
+tt = np.arange(0, run_time)
 spikes = np.array(input_spikes[0])
 spks = np.repeat(spikes, 2)
-fig = plt.figure()
-plt.plot(spks, u, linewidth=2, label='u')
-plt.plot(spks, x, linewidth=2, label='x')
-plt.scatter(spikes, w, c='c', marker="o", label='w', alpha=0.5)
-plt.legend()
+v = np.array(v_my_model_my_input_type_pop.segments[0].filter(name='v')[0])
+I_exc = np.array(exc_input.segments[0].filter(name='gsyn_exc')[0])
+
+ax[0].plot(tt, v, linewidth=2)
+ax[0].set_xlim([0, run_time])
+ax[0].set_ylabel(r'v')
+ax[1].plot(spks, u, linewidth=2, label='u', c='k')
+ax[1].plot(spks, x, linewidth=2, label='x', c='cornflowerblue')
+ax[1].scatter(spikes, w, c='c', marker="o", label='w', alpha=0.5)
+ax[1].set_xlim([0, run_time])
+ax[1].legend()
+ax[2].plot(tt, I_exc, linewidth=2, c='r')
+ax[2].set_xlim([0, run_time])
+ax[2].set_ylabel(r'I')
+ax[3].scatter(spikes, np.ones(len(spikes)), c='cornflowerblue')
+ax[3].set_xlim([0, run_time])
+ax[3].set_xlabel(r'Time $[ms]$')
 
 plt.show()
 p.end()
