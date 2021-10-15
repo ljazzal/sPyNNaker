@@ -1,6 +1,4 @@
 # import spynnaker8 and plotting stuff
-from python_models8.neuron import input_types
-from python_models8.neuron.plasticity.stdp import timing_dependence
 import numpy as np
 import spynnaker8 as p
 from pyNN.utility.plotting import Figure, Panel
@@ -10,17 +8,11 @@ import os
 
 # import models
 from python_models8.neuron.plasticity.stdp.timing_dependence\
-    .my_timing_dependence import (
-        MyTimingDependence)
-from python_models8.neuron.plasticity.stdp.timing_dependence\
     .tm_timing_dependence import (
         TsodyksMarkramTimingDependence)
 from python_models8.neuron.plasticity.stdp.weight_dependence\
     .tm_weight_dependence import (
         TsodyksMarkramWeightDependence)
-from python_models8.neuron.plasticity.stdp.weight_dependence\
-    .my_weight_dependence import (
-        MyWeightDependence)
 
 
 # Set the run time of the execution
@@ -39,7 +31,7 @@ i_offset = 0.0
 weight = 1.0
 
 # Set the times at which to input a spike
-# spike_times = np.array([10., 80., 140, 190, 230., 260., 280., 290., 300., 310, 320., 480, 490])#], 340, 360, 370, 710, 720, 730, 740, 780])
+# Spike times to replicate STP figures from http://dx.doi.org/10.4249/scholarpedia.3153
 spike_times = np.array([20, 90, 150, 195, 230])
 
 p.setup(time_step)
@@ -48,53 +40,46 @@ spikeArray = {"spike_times": spike_times}
 input_pop = p.Population(
     n_neurons, p.SpikeSourceArray(**spikeArray), label="input")
 
-my_model_stdp_pop = p.Population(
-    n_neurons, p.IF_curr_exp(i_offset=i_offset, tau_syn_E=20.0, tau_syn_I=20.0), label="my_model_pop")
-stdp = p.STDPMechanism(
+# A standard IF_curr_exp is used
+tm_stp_pop = p.Population(n_neurons, p.IF_curr_exp(i_offset=i_offset, tau_syn_E=20.0, tau_syn_I=20.0), label="my_model_pop")
+
+# A custom STP mechanism is used
+stp = p.STDPMechanism(
     timing_dependence=TsodyksMarkramTimingDependence(
-        tau_f=50.0, tau_d=750.0),
-        # tau_f=750.0, tau_d=50.0),
+        tau_f=50.0, tau_d=750.0),       # STD
+        # tau_f=750.0, tau_d=50.0),     # STF
     weight_dependence=TsodyksMarkramWeightDependence(A=1.0, U=0.45,
         w_min=0.0, w_max=10.0), weight=weight)
 
-stdp_connection = p.Projection(
-    input_pop, my_model_stdp_pop,
+stp_connection = p.Projection(
+    input_pop, tm_stp_pop,
     p.OneToOneConnector(),
-    synapse_type=stdp, receptor_type='excitatory')
+    synapse_type=stp, receptor_type='excitatory')
 
 input_pop.record(['spikes'])
-my_model_stdp_pop.record(['v', 'gsyn_exc', 'spikes'])
+tm_stp_pop.record(['v', 'gsyn_exc', 'spikes'])
 
 p.run(run_time)
 
-# print(stdp_connection.get('weight', 'list'))
 
-# get v for each example
-# v_my_model_pop = my_model_pop.get_data('v')
-v_my_model_my_input_type_pop = my_model_stdp_pop.get_data('v')
-exc_input = my_model_stdp_pop.get_data('gsyn_exc')
+# Collect data
+v_tm_stp_pop = tm_stp_pop.get_data('v')
+exc_input_tm_stp_pop = tm_stp_pop.get_data('gsyn_exc')
 input_spikes = input_pop.get_data('spikes').segments[0].spiketrains
-# v_my_model_my_synapse_type_pop = my_model_my_synapse_type_pop.get_data('v')
-# v_my_model_my_additional_input_pop = my_model_my_additional_input_pop.get_data(
-#     'v')
-# v_my_model_my_threshold_pop = my_model_my_threshold_pop.get_data('v')
-# v_my_if_curr_exp_semd_pop = my_if_curr_exp_semd_pop.get_data('v')
-# v_my_full_neuron_pop = my_full_neuron_pop.get_data('v')
 
 Figure(
-    # membrane potentials for each example
     Panel(input_spikes,
           ylabel="Input spikes", yticks=True, xticks=True, xlim=(0, run_time)),
-    Panel(v_my_model_my_input_type_pop.segments[0].filter(name='v')[0],
+    Panel(v_tm_stp_pop.segments[0].filter(name='v')[0],
           ylabel="Membrane potential (mV)",
-          data_labels=[my_model_stdp_pop.label],
+          data_labels=[tm_stp_pop.label],
           yticks=True, xlim=(0, run_time)),
-    Panel(exc_input.segments[0].filter(name='gsyn_exc')[0],
+    Panel(exc_input_tm_stp_pop.segments[0].filter(name='gsyn_exc')[0],
           ylabel="Excitatory input",
           yticks=True, xlim=(0, run_time)),
     title="Simple my model examples",
     annotations="Simulated with {}".format(p.name())
-).save('tm_std_synapse.png')
+)#.save('tm_std_synapse.png')
 
 # Extracting data from logs
 reports = sorted(os.listdir("./reports"), key=lambda x: datetime.datetime.strptime(x, '%Y-%m-%d-%H-%M-%S-%f'))
@@ -126,8 +111,8 @@ fig, ax = plt.subplots(ncols=1, nrows=4)
 tt = np.arange(0, run_time)
 spikes = np.array(input_spikes[0])
 spks = np.repeat(spikes, 2)
-v = np.array(v_my_model_my_input_type_pop.segments[0].filter(name='v')[0])
-I_exc = np.array(exc_input.segments[0].filter(name='gsyn_exc')[0])
+v = np.array(v_tm_stp_pop.segments[0].filter(name='v')[0])
+I_exc = np.array(exc_input_tm_stp_pop.segments[0].filter(name='gsyn_exc')[0])
 
 ax[0].plot(tt, v, linewidth=2)
 ax[0].set_xlim([0, run_time])
