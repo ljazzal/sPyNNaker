@@ -1,0 +1,98 @@
+# SpiNNaker DBS simulation parameters
+sim:
+  dt: 0.1
+  T: 20
+
+# Neuron parameters
+nucleus:
+  N: 1
+  STN:
+    tau_m: 10.0
+    tau_refrac: 1
+    v_rest: -70.0
+    v_thresh: -40.0
+    v_reset: -90.0
+    E_L: -60.0
+    cm: 1.0
+    i_offset: 32.0
+    # OUP
+    noise_std: 11
+    noise_tau: 5
+    # Synapse
+    tau_syn_E: 3.0
+    tau_syn_I: 10.0
+    # Weights
+    w_exc: 1.5
+    w_inh: 1.0
+  VIM:
+    tau_m: 50.0
+    tau_refrac: 1
+    v_rest: -70.0
+    v_thresh: -40.0
+    v_reset: -90.0
+    E_L: -60.0
+    cm: 1.0
+    i_offset: 30.0
+    # OUP
+    noise_std: 45
+    noise_tau: 5
+    # Synapse
+    tau_syn_E: 5.0
+    tau_syn_I: 8.5
+    # Weights
+    w_exc: 2.5
+    w_inh: 6.0
+  SNr:
+    tau_m: 10.0
+    tau_refrac: 1
+    v_rest: -70.0
+    v_thresh: -40.0
+    v_reset: -90.0
+    E_L: -60.0
+    cm: 1.0
+    i_offset: 55.0
+    # OUP
+    noise_std: 10
+    noise_tau: 5
+    # Synapse
+    tau_syn_E: 3.0
+    tau_syn_I: 10.0
+    # Weights
+    w_exc: 1.5
+    w_inh: 1.0
+
+# STP parameters
+synapses:
+  fac:
+    exc:
+      perc: 0.3
+      tau_f: 670
+      tau_d: 138
+      U: 0.09
+    inh:
+      perc: 0.3
+      tau_f: 376
+      tau_d: 45
+      U: 0.016
+  dep:
+    exc:
+      perc: 0.4
+      tau_f: 17
+      tau_d: 671
+      U: 0.5
+    inh:
+      perc: 0.4
+      tau_f: 21
+      tau_d: 706
+      U: 0.25
+  psu:
+    exc:
+      perc: 0.3
+      tau_f: 326
+      tau_d: 329
+      U: 0.29
+    inh:
+      perc: 0.3
+      tau_f: 62
+      tau_d: 144
+      U: 0.29
