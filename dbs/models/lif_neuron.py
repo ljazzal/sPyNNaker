@@ -21,7 +21,8 @@ class LIFPopulation:
         self.neuron_params = neuron_params
         self.synapse_params = synapse_params
         self.population_label = nucleus
-        self.synapses = dict.fromkeys(synapse_params)
+        self.exc_synapses = dict.fromkeys(synapse_params)
+        self.inh_synapses = dict.fromkeys(synapse_params)
         
         self.initialize(self.neuron_params, self.synapse_params)
     
@@ -32,17 +33,28 @@ class LIFPopulation:
         self.pop = sim.Population(neuron_params["N"], self.neuron, label=self.population_label)
 
         # TODO: add support for static synapses
-        default_weight_params = TsodyksMarkramWeightDependence.get_parameter_names()
-        default_timing_params = TsodyksMarkramTimingDependence.get_parameter_names()
-        for syn in self.synapses.keys():
-            stp_w_params = {p: synapse_params[syn][p] for p in synapse_params[syn].keys() & default_weight_params}
-            stp_t_params = {p: synapse_params[syn][p] for p in synapse_params[syn].keys() & default_timing_params}
-            self.synapses[syn] = sim.STDPMechanism(
+        default_weight_params = TsodyksMarkramWeightDependence().get_parameter_names()
+        default_timing_params = TsodyksMarkramTimingDependence().get_parameter_names()
+        for syn in self.exc_synapses.keys():
+            exc_stp_w_params = {p: synapse_params[syn]["exc"][p] for p in synapse_params[syn]["exc"].keys() & default_weight_params}
+            exc_stp_t_params = {p: synapse_params[syn]["exc"][p] for p in synapse_params[syn]["exc"].keys() & default_timing_params}
+            inh_stp_w_params = {p: synapse_params[syn]["inh"][p] for p in synapse_params[syn]["inh"].keys() & default_weight_params}
+            inh_stp_t_params = {p: synapse_params[syn]["inh"][p] for p in synapse_params[syn]["inh"].keys() & default_timing_params}
+            self.exc_synapses[syn] = sim.STDPMechanism(
                 timing_dependence=TsodyksMarkramTimingDependence(
-                    **stp_t_params
+                    **exc_stp_t_params
                 ),
                 weight_dependence=TsodyksMarkramWeightDependence(
-                    **stp_w_params
+                    **exc_stp_w_params
+                ),
+                # weight=weight
+            )
+            self.inh_synapses[syn] = sim.STDPMechanism(
+                timing_dependence=TsodyksMarkramTimingDependence(
+                    **inh_stp_t_params
+                ),
+                weight_dependence=TsodyksMarkramWeightDependence(
+                    **inh_stp_w_params
                 ),
                 # weight=weight
             )
