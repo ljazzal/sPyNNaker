@@ -3,10 +3,7 @@
 import numpy as np
 import yaml
 import spynnaker8 as sim
-from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
-import datetime
-import os
 
 # Tsodyks-Markram synapse model for SpiNNaker
 from python_models8.neuron.plasticity.stdp.timing_dependence\

@@ -32,7 +32,6 @@ typedef struct {
 //---------------------------------------
 extern int16_lut *tau_f_lookup;
 extern int16_lut *tau_d_lookup;
-// extern int16_lut *tau_syn_lookup;
 
 //---------------------------------------
 // Timing dependence inline functions

@@ -17,7 +17,7 @@ class TsodyksMarkramWeightDependence(AbstractHasAPlusAMinus, AbstractWeightDepen
         "_U"]
 
     # Must match number of words written by write_parameters() method
-    WORDS_PER_SYNAPSE_TYPE = 3
+    WORDS_PER_SYNAPSE_TYPE = 6
 
     def __init__(
             self,
