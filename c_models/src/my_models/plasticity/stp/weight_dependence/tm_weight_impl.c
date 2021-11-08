@@ -27,7 +27,8 @@ address_t weight_initialise(
         plasticity_weight_region_data[s].max_weight = config[s].max_weight;
         plasticity_weight_region_data[s].u = config[s].u;
         plasticity_weight_region_data[s].x = config[s].x;
-        plasticity_weight_region_data[s].A = config[s].A;
+        plasticity_weight_region_data[s].y = config[s].y;
+        plasticity_weight_region_data[s].initial_weight = config[s].initial_weight;
         plasticity_weight_region_data[s].U = config[s].U;
 
         // TODO: Copy any other data

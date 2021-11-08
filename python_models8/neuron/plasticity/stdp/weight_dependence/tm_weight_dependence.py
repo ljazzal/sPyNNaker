@@ -10,18 +10,18 @@ class TsodyksMarkramWeightDependence(AbstractHasAPlusAMinus, AbstractWeightDepen
         # "_my_weight_parameter",
         "_w_max",
         "_w_min",
-
         "_u",
         "_x",
-        "_A",
+        "_y",
+        "_w_init",
         "_U"]
 
     # Must match number of words written by write_parameters() method
-    WORDS_PER_SYNAPSE_TYPE = 6
+    WORDS_PER_SYNAPSE_TYPE = 7
 
     def __init__(
             self,
-            u=0.0, x=1.0, A=1.0, U=0.5, w_min=0.0, w_max=1.0, A_plus=1.0, A_minus=1.0):
+            u=0.0, x=1.0, y=0.0, w_init=1.0, U=0.5, w_min=0.0, w_max=1.0, A_plus=1.0, A_minus=1.0):
         super().__init__()
 
         # TODO: Store any parameters
@@ -29,7 +29,8 @@ class TsodyksMarkramWeightDependence(AbstractHasAPlusAMinus, AbstractWeightDepen
         self._w_max = w_max
         self._u = u
         self._x = x
-        self._A = A
+        self._y = y
+        self._w_init = w_init
         self._U = U
 
     # TODO: Add getters and setters for the parameters
@@ -67,12 +68,20 @@ class TsodyksMarkramWeightDependence(AbstractHasAPlusAMinus, AbstractWeightDepen
         self._x = x
 
     @property
-    def A(self):
-        return self._A
+    def y(self):
+        return self._y
 
-    @A.setter
-    def A(self, A):
-        self._A = A
+    @y.setter
+    def y(self, y):
+        self._y = y
+
+    @property
+    def w_init(self):
+        return self._w_init
+
+    @w_init.setter
+    def w_init(self, w_init):
+        self._w_init = w_init
 
     @property
     def U(self):
@@ -93,7 +102,8 @@ class TsodyksMarkramWeightDependence(AbstractHasAPlusAMinus, AbstractWeightDepen
             (self._w_max == weight_dependence._w_max) and
             (self._u == weight_dependence._u) and
             (self._x == weight_dependence._x) and
-            (self._A == weight_dependence._A) and
+            (self._y == weight_dependence._y) and
+            (self._w_init == weight_dependence._w_init) and
             (self._U == weight_dependence._U))
 
     @property
@@ -132,10 +142,12 @@ class TsodyksMarkramWeightDependence(AbstractHasAPlusAMinus, AbstractWeightDepen
                 data=int(round(self._u * w)), data_type=DataType.INT32)
             spec.write_value(
                 data=int(round(self._x * w)), data_type=DataType.INT32)
+            spec.write_value(
+                data=int(round(self._y * w)), data_type=DataType.INT32)
 
             # Write my parameter as an appropriately scaled fixed-point number
             spec.write_value(
-                data=int(round(self._A * w)),
+                data=int(round(self._w_init * w)),
                 data_type=DataType.INT32)
             
             spec.write_value(
@@ -157,4 +169,4 @@ class TsodyksMarkramWeightDependence(AbstractHasAPlusAMinus, AbstractWeightDepen
 
     @overrides(AbstractWeightDependence.get_parameter_names)
     def get_parameter_names(self):
-        return ['A', 'U', 'u', 'x', 'w_min', 'w_max']#, 'A_plus', 'A_minus']
+        return ['w_min', 'w_max',  'u', 'x', 'y', 'w_init', 'U']#, 'A_plus', 'A_minus']
