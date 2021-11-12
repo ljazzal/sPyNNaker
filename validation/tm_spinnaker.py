@@ -14,16 +14,19 @@ from python_models8.neuron.plasticity.stdp.weight_dependence\
         TsodyksMarkramWeightDependence)
 
 
-def tm_simulation(params):
+def tm_simulation(input_spikes, params, syn="fac", type="exc"):
 
 
     # Simulation setup
     sim.setup(params["sim"]["dt"])
     # Spike times to replicate STP figures from http://dx.doi.org/10.4249/scholarpedia.3153
-    spike_times = np.array([20, 90, 150, 195, 230, 720, 790, 850, 895, 930])
-    spike_array = {"spike_times": spike_times}
+    # spike_times = np.array([20, 90, 150, 195, 230, 720, 790, 850, 895, 930])
+    # spike_times = np.array([16.,  79., 213., 225., 265., 276., 340., 366., 422., 636., 760., 886., 894., 936., 941.])
+    spike_array = {"spike_times": input_spikes}
+    # poisson_source = sim.SpikeSourcePoisson(rate=50)
     input_pop = sim.Population(1,
         sim.SpikeSourceArray(**spike_array),
+        # poisson_source,
         label="input")
 
     # LIF configuration
@@ -34,11 +37,12 @@ def tm_simulation(params):
 
     # Synapse configuration and projection
     # A custom STP mechanism is used on SpiNNaker
+    syn_params = params["synapses"]["fac"]["exc"]
     stp = sim.STDPMechanism(
         timing_dependence=TsodyksMarkramTimingDependence(
-            tau_f=750.0, tau_d=50.0),
+            tau_f=syn_params["tau_f"], tau_d=syn_params["tau_d"]),
         weight_dependence=TsodyksMarkramWeightDependence(
-            A=1.0, U=0.15, w_min=0.0, w_max=10.0),
+            U=syn_params["U"], w_min=0.0, w_max=10.0),
         weight=2.0)
     stp_connection = sim.Projection(
         input_pop, lif_pop,
