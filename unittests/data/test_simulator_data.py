@@ -31,14 +31,14 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIn("run_1", view.report_default_directory)
         self.assertIn("provenance_data", view.provenance_file_path)
         with self.assertRaises(SimulatorDataNotYetAvialable):
-            view.machine_time_step
+            view.simulation_time_step_us
         with self.assertRaises(SimulatorDataNotYetAvialable):
             view.min_delay
         self.assertFalse(view.has_min_delay())
-        writer.set_machine_time_step(100)
+        writer.set_up_timings(100, 10)
         self.assertTrue(view.has_min_delay())
-        self.assertEqual(100, view.machine_time_step)
-        self.assertEqual(100, view.min_delay)
+        self.assertEqual(100, view.simulation_time_step_us)
+        self.assertEqual(0.1, view.min_delay)
         writer.set_min_delay(200)
         self.assertEqual(200, view.min_delay)
 
