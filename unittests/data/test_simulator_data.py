@@ -14,10 +14,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from spinn_front_end_common.data import FecDataView, FecDataWriter
+from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.utilities.exceptions import (
-    SimulatorDataNotYetAvialable)
-from spynnaker.pyNN.data import SpynnakerDataView, SpynnakerDataWriter
+    ConfigurationException, SimulatorDataNotYetAvialable)
+from spynnaker.pyNN.data import SpynnakerDataView
+from spynnaker.pyNN.data.spynnaker_data_writer import SpynnakerDataWriter
 
 
 class TestSimulatorData(unittest.TestCase):
@@ -39,26 +41,38 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(view.has_min_delay())
         self.assertEqual(100, view.simulation_time_step_us)
         self.assertEqual(0.1, view.min_delay)
-        writer.set_min_delay(200)
-        self.assertEqual(200, view.min_delay)
+
+    def test_min_delay(self):
+        writer = SpynnakerDataWriter()
+        writer.setup()
+        with self.assertRaises(SimulatorDataNotYetAvialable):
+            writer.min_delay
+
+        writer.set_up_timings_and_delay(500, 1, 0.5)
+        self.assertEqual(0.5, writer.min_delay)
+
+        writer.set_up_timings_and_delay(1000, 1, None)
+        self.assertEqual(1, writer.min_delay)
+
+        with self.assertRaises(ConfigurationException):
+            writer.set_up_timings_and_delay(1000, 1, 0)
+
+        with self.assertRaises(ConfigurationException):
+            writer.set_up_timings_and_delay(1000, 1, 1.5)
+
+        with self.assertRaises(TypeError):
+            writer.set_up_timings_and_delay(1000, 1, "baocn")
+
 
     def test_dict(self):
         view = SpynnakerDataView()
         writer = SpynnakerDataWriter()
         writer.setup()
 
-        self.assertFalse(view.has_min_delay())
-        self.assertFalse("MinDelay" in view)
+        self.assertFalse("APPID" in view)
         with self.assertRaises(KeyError):
-            view["MinDelay"]
-        with self.assertRaises(SimulatorDataNotYetAvialable):
-            view.min_delay
-        writer.set_min_delay(400)
+            view["APPID"]
         writer.set_app_id(8)
-        self.assertTrue(view.has_min_delay())
-        self.assertEqual(400, view.min_delay)
-        self.assertEqual(400, view["MinDelay"])
-        self.assertTrue("MinDelay" in view)
         self.assertEqual(8, view["APPID"])
 
     def test_mock(self):
@@ -83,10 +97,3 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(7, writer.app_id)
         self.assertEqual(7, writer1.app_id)
         self.assertEqual(7, writer2.app_id)
-        writer.set_min_delay(345)
-        self.assertEqual(345, view.min_delay)
-        self.assertEqual(345, view1.min_delay)
-        # view2 has no min_delay
-        self.assertEqual(345, writer.min_delay)
-        self.assertEqual(345, writer1.min_delay)
-        # writter2 has no min_delay

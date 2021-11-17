@@ -22,10 +22,9 @@ from pyNN.random import NumpyRNG, RandomDistribution
 
 from spinn_utilities.logger_utils import warn_once
 from spinn_utilities.safe_eval import SafeEval
-from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step_ms)
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
+from spynnaker.pyNN.data import SpynnakerDataView
 from spynnaker.pyNN.utilities import utility_calls
 from spynnaker.pyNN.exceptions import SpynnakerException
 
@@ -50,7 +49,6 @@ class AbstractConnector(object, metaclass=AbstractBase):
 
     __slots__ = [
         "_delays",
-        "__min_delay",
         "__n_clipped_delays",
         "_rng",
         "__safe",
@@ -80,7 +78,6 @@ class AbstractConnector(object, metaclass=AbstractBase):
         self._rng = rng
 
         self.__n_clipped_delays = numpy.int64(0)
-        self.__min_delay = 0
         self.__param_seeds = dict()
         self.__synapse_info = None
 
@@ -96,7 +93,6 @@ class AbstractConnector(object, metaclass=AbstractBase):
         :param SynapseInformation synapse_info: the synapse info
         """
         self._rng = (self._rng or NumpyRNG())
-        self.__min_delay = machine_time_step_ms()
 
     def _check_parameter(self, values, name, allow_lists):
         """ Check that the types of the values is supported.
@@ -522,16 +518,17 @@ class AbstractConnector(object, metaclass=AbstractBase):
         :param ~numpy.ndarray delays:
         :rtype: ~numpy.ndarray
         """
+        min_delay = SpynnakerDataView().min_delay
         # count values that could be clipped
-        self.__n_clipped_delays = numpy.sum(delays < self.__min_delay)
+        self.__n_clipped_delays = numpy.sum(delays < min_delay)
 
         # clip values
         if numpy.isscalar(delays):
-            if delays < self.__min_delay:
-                delays = self.__min_delay
+            if delays < min_delay:
+                delays = min_delay
         else:
             if delays.size:
-                delays[delays < self.__min_delay] = self.__min_delay
+                delays[delays < min_delay] = min_delay
         return delays
 
     def _generate_delays(
@@ -592,8 +589,9 @@ class AbstractConnector(object, metaclass=AbstractBase):
                     f"The delays in the connector {self.__class__.__name__} "
                     f"from {synapse_info.pre_population.label} "
                     f"to {synapse_info.post_population.label} "
-                    f"was clipped to {self.__min_delay} a total of {ncd} "
-                    f"times. This can be avoided by reducing the timestep or "
+                    f"was clipped to {SpynnakerDataView().min_delay} "
+                    f"a total of {ncd} times. "
+                    f"This can be avoided by reducing the timestep or "
                     f"increasing the minimum delay to one timestep")
 
     @property

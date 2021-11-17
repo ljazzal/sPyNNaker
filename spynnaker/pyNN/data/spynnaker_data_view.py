@@ -73,7 +73,9 @@ class SpynnakerDataView(FecDataView):
     def get_min_delay(self):
         """ The minimum supported delay, in milliseconds.
 
-        :rtype: int
+        Typically simulation_time_step_per_ms but may be a positive multiple
+
+        :rtype: float
         :raises SpinnFrontEndException:
             If the min_delay is currently unavailable
         """
@@ -85,7 +87,9 @@ class SpynnakerDataView(FecDataView):
     def min_delay(self):
         """ The minimum supported delay, in milliseconds.
 
-        :rtype: int
+        Typically simulation_time_step_per_ms but may be a positive multiple
+
+        :rtype: float
         :raises SpinnFrontEndException:
             If the min_delay is currently unavailable
         """

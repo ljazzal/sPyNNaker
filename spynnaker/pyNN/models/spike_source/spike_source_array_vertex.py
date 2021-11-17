@@ -18,12 +18,13 @@ import numpy
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.ranged import RangedListOfList
-from spinn_front_end_common.utility_models import ReverseIpTagMultiCastSource
 from spinn_front_end_common.abstract_models import AbstractChangableAfterRun
 from spinn_front_end_common.abstract_models.impl import (
     ProvidesKeyToAtomMappingImpl)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.globals_variables import (
-    get_simulator, machine_time_step)
+    get_simulator)
+from spinn_front_end_common.utility_models import ReverseIpTagMultiCastSource
 from spynnaker.pyNN.models.common import (
     AbstractSpikeRecordable, EIEIOSpikeRecorder, SimplePopulationSettable)
 from spynnaker.pyNN.utilities import constants
@@ -168,7 +169,7 @@ class SpikeSourceArrayVertex(
 
     @overrides(AbstractSpikeRecordable.get_spikes_sampling_interval)
     def get_spikes_sampling_interval(self):
-        return machine_time_step()
+        return FecDataView().simulation_time_step_us
 
     @overrides(AbstractSpikeRecordable.get_spikes)
     def get_spikes(self, placements, buffer_manager):

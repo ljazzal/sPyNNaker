@@ -14,6 +14,5 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .spynnaker_data_view import SpynnakerDataView
-from .spynnaker_data_writer import SpynnakerDataWriter
 
-__all__ = ["SpynnakerDataView", "SpynnakerDataWriter"]
+__all__ = ["SpynnakerDataView"]

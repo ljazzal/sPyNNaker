@@ -21,11 +21,10 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.resources.variable_sdram import VariableSDRAM
 from data_specification.enums import DataType
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.constants import (
     BYTES_PER_WORD, BITS_PER_WORD)
-from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step_ms)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -51,7 +50,7 @@ def get_sampling_interval(sampling_rate):
     :return: Sampling interval in microseconds
     :rtype: float
     """
-    return sampling_rate * machine_time_step_ms()
+    return sampling_rate * FecDataView().simulation_time_step_ms
 
 
 class NeuronRecorder(object):
@@ -452,7 +451,8 @@ class NeuronRecorder(object):
             else:
                 raw_data = record_raw
             if len(raw_data) > 0:
-                record_time = raw_data[:, 0] * machine_time_step_ms()
+                record_time = (
+                        raw_data[:, 0] * FecDataView().simulation_time_step_ms)
                 spikes = raw_data[:, 1:].byteswap().view("uint8")
                 bits = numpy.fliplr(numpy.unpackbits(spikes).reshape(
                     (-1, 32))).reshape((-1, n_bytes * 8))
@@ -564,7 +564,8 @@ class NeuronRecorder(object):
                 raw_data = record_raw
 
             if len(raw_data) > 0:
-                record_time = raw_data[:, 0] * machine_time_step_ms()
+                record_time = (raw_data[:, 0] *
+                               FecDataView().simulation_time_step_ms)
                 rewires_raw = raw_data[:, 1:]
                 rew_length = len(rewires_raw)
                 # rewires is 0 (elimination) or 1 (formation) in the first bit
@@ -727,7 +728,7 @@ class NeuronRecorder(object):
         if sampling_interval is None:
             return 1
 
-        step = machine_time_step_ms()
+        step = FecDataView().simulation_time_step_ms
         rate = int(sampling_interval / step)
         if sampling_interval != rate * step:
             msg = "sampling_interval {} is not an an integer multiple of the "\

@@ -16,7 +16,8 @@
 import logging
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
-from spinn_front_end_common.data import FecDataWriter
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from .spynnaker_data_view import SpynnakerDataView, _SpynnakerDataModel
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -38,14 +39,42 @@ class SpynnakerDataWriter(FecDataWriter, SpynnakerDataView):
     @overrides(FecDataWriter.mock)
     def mock(self):
         FecDataWriter.mock(self)
-        self.set_min_delay(1000)
+        self._set_min_delay(1)
 
-    def set_min_delay(self, min_delay):
-        """
-        Sets a min delay or accepts None to use machine_time_step
+    def set_up_timings_and_delay(
+            self, simulation_time_step_us, time_scale_factor, min_delay):
+        try:
+            self.set_up_timings(simulation_time_step_us, time_scale_factor)
+            self._set_min_delay(min_delay)
+        except ConfigurationException:
+            self.__spy_data._min_delay = None
+            raise
 
-        :param min_delay: new value or None to say use machine_time_step
-        :type min_delay: int or None
-        :return:
+    def _set_min_delay(self, min_delay):
         """
+        Sets a min delay or accepts None to use simulation_time_step_ms
+
+        :param min_delay: new value or None to say use simulation_time_step_ms
+        :type min_delay: int, float or None
+        """
+        if min_delay is None:
+            min_delay = self.simulation_time_step_ms
+
+        if not isinstance(min_delay, (int, float)):
+            raise TypeError("min_delay should be an float (or int)")
+
+        if min_delay < self.simulation_time_step_ms:
+            raise ConfigurationException(
+                f'invalid min_delay: {min_delay} '
+                f'must at least simulation time step in microseconds: '
+                f'{self.get_simulation_time_step_ms()}')
+
+        raw = self.get_simulation_time_step_ms() / min_delay
+        rounded = round(raw)
+        if abs(rounded - raw) > 0.00001:
+            raise ConfigurationException(
+                f'invalid min_delay {min_delay }'
+                f'must at multiple of simulation time step in microseconds '
+                f' {self.get_simulation_time_step_ms()}')
+
         self.__spy_data._min_delay = min_delay

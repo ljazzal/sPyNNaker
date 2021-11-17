@@ -19,11 +19,10 @@ from spinn_utilities.abstract_base import (
     AbstractBase, abstractmethod, abstractproperty)
 from spinn_utilities.overrides import overrides
 from data_specification.enums.data_type import DataType
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION,
     BYTES_PER_WORD, BYTES_PER_SHORT)
-from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step)
 from .abstract_synapse_dynamics_structural import (
     AbstractSynapseDynamicsStructural)
 from spynnaker.pyNN.exceptions import SynapticConfigurationException
@@ -161,19 +160,19 @@ class SynapseDynamicsStructuralCommon(
         :rtype: None
         """
         spec.comment("Writing common rewiring data")
+        view = FecDataView()
         if (self.p_rew * MICRO_TO_MILLISECOND_CONVERSION <
-                machine_time_step() / MICRO_TO_MILLISECOND_CONVERSION):
+                view.simulation_time_step_ms):
             # Fast rewiring
             spec.write_value(data=1)
             spec.write_value(data=int(
-                machine_time_step() / (
+                view.simulation_time_step_ms / (
                     self.p_rew * MICRO_TO_SECOND_CONVERSION)))
         else:
             # Slow rewiring
             spec.write_value(data=0)
-            spec.write_value(data=int((
-                self.p_rew * MICRO_TO_SECOND_CONVERSION) /
-                machine_time_step()))
+            spec.write_value(data=int(
+                self.p_rew * view.simulation_time_step_per_ms))
         # write s_max
         spec.write_value(data=int(self.s_max))
         # write total number of atoms in the application vertex
@@ -237,9 +236,7 @@ class SynapseDynamicsStructuralCommon(
             self_connected = app_vertex == app_edge.pre_vertex
             spec.write_value(int(self_connected), data_type=DataType.UINT16)
             # Delay
-            delay_scale = (
-                    MICRO_TO_MILLISECOND_CONVERSION /
-                    machine_time_step())
+            delay_scale = FecDataView().simulation_time_step_per_ms
             if isinstance(dynamics.initial_delay, collections.Iterable):
                 spec.write_value(int(dynamics.initial_delay[0] * delay_scale),
                                  data_type=DataType.UINT16)
@@ -437,10 +434,9 @@ class SynapseDynamicsStructuralCommon(
 
     def get_max_rewires_per_ts(self):
         max_rewires_per_ts = 1
-        if (self.p_rew * MICRO_TO_MILLISECOND_CONVERSION <
-                machine_time_step() / MICRO_TO_MILLISECOND_CONVERSION):
+        time_step_ms = FecDataView().simulation_time_step_ms
+        if (self.p_rew * MICRO_TO_MILLISECOND_CONVERSION < time_step_ms):
             # fast rewiring, so need to set max_rewires_per_ts
-            max_rewires_per_ts = int(machine_time_step() / (
-                self.p_rew * MICRO_TO_SECOND_CONVERSION))
+            max_rewires_per_ts = int(time_step_ms / self.p_rew)
 
         return max_rewires_per_ts

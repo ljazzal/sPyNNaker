@@ -15,10 +15,9 @@
 
 import numpy
 from spinn_utilities.overrides import overrides
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
-from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step)
 from spynnaker.pyNN.exceptions import InvalidParameterType
 from .abstract_connector import AbstractConnector
 
@@ -359,10 +358,11 @@ class FromListConnector(AbstractConnector):
         self.__delays = None
         try:
             delay_column = column_names.index('delay') + _FIRST_PARAM
+            view = FecDataView()
             self.__delays = (numpy.rint(
                 numpy.array(self.__conn_list[:, delay_column]) * (
-                    MICRO_TO_MILLISECOND_CONVERSION / machine_time_step())) *
-                    (machine_time_step() / MICRO_TO_MILLISECOND_CONVERSION))
+                    view.simulation_time_step_per_ms)) *
+                    view.simulation_time_step_ms)
         except ValueError:
             pass
 

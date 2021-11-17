@@ -32,8 +32,8 @@ from spinn_front_end_common.utility_models import CommandSender
 from spinn_front_end_common.utilities.utility_objs import ExecutableFinder
 from spynnaker.pyNN import model_binaries
 from spynnaker.pyNN.config_setup import CONFIG_FILE_NAME, setup_configs
-from spynnaker.pyNN.utilities import constants
 from spynnaker import __version__ as version
+from spynnaker.pyNN.data.spynnaker_data_writer import SpynnakerDataWriter
 from spynnaker.pyNN.extra_algorithms import (
     DelaySupportAdder, OnChipBitFieldGenerator,
     RedundantPacketCountReport,
@@ -59,7 +59,6 @@ class AbstractSpiNNakerCommon(AbstractSpinnakerBase):
         "__edge_count",
         "__id_counter",
         "__live_spike_recorder",
-        "__min_delay",
         "__neurons_per_core_set",
         "_populations",
         "_projections"]
@@ -108,9 +107,6 @@ class AbstractSpiNNakerCommon(AbstractSpinnakerBase):
         self.__command_edge_count = 0
         self.__live_spike_recorder = dict()
 
-        # timing parameters
-        self.__min_delay = None
-
         self.__neurons_per_core_set = set()
 
         versions = [("sPyNNaker", version)]
@@ -125,17 +121,11 @@ class AbstractSpiNNakerCommon(AbstractSpinnakerBase):
             n_boards_required=n_boards_required,
             front_end_versions=versions)
 
+        self._data_writer = SpynnakerDataWriter()
+
         # set up machine targeted data
         self._set_up_timings(timestep, min_delay, time_scale_factor)
         self.set_up_machine_specifics(hostname)
-
-        logger.info(f'Setting time scale factor to '
-                    f'{self.time_scale_factor}.')
-
-        # get the machine time step
-        logger.info(f'Setting machine time step to '
-                    f'{self.machine_time_step} '
-                    f'micro-seconds.')
 
     def _set_up_timings(self, timestep, min_delay, time_scale_factor):
         """
@@ -147,40 +137,16 @@ class AbstractSpiNNakerCommon(AbstractSpinnakerBase):
 
         # Get the standard values
         if timestep is None:
-            self.set_up_timings(timestep, time_scale_factor)
+            self._data_writer.set_up_timings_and_delay(
+                timestep, time_scale_factor, min_delay)
         else:
-            self.set_up_timings(
+            self._data_writer.set_up_timings_and_delay(
                 math.ceil(timestep * MICRO_TO_MILLISECOND_CONVERSION),
-                time_scale_factor)
+                time_scale_factor, min_delay)
 
-        # Sort out the minimum delay
-        if (min_delay is not None and
-                min_delay < self.machine_time_step_ms):
-            raise ConfigurationException(
-                f"Pacman does not support min delays below "
-                f"{constants.MIN_SUPPORTED_DELAY * self.machine_time_step} "
-                f"ms with the current machine time step")
-        if min_delay is not None:
-            self.__min_delay = min_delay
-        else:
-            self.__min_delay = self.machine_time_step_ms
-
-        # Sort out the time scale factor if not user specified
-        # (including config)
-        if self.time_scale_factor is None:
-            self.time_scale_factor = max(
-                1.0, math.ceil(
-                    MICRO_TO_MILLISECOND_CONVERSION / self.machine_time_step))
-            if self.time_scale_factor > 1:
-                logger.warning(
-                    "A timestep was entered that has forced sPyNNaker to "
-                    "automatically slow the simulation down from real time "
-                    "by a factor of {}. To remove this automatic behaviour, "
-                    "please enter a timescaleFactor value in your .{}",
-                    self.time_scale_factor, CONFIG_FILE_NAME)
-
-        # Check the combination of machine time step and time scale factor
-        if (self.machine_time_step_ms * self.time_scale_factor < 1):
+        # Check the combination of simulator time step and time scale factor
+        if (self._data_writer.simulation_time_step_ms *
+                self._data_writer.time_scale_factor < 1):
             if not get_config_bool(
                     "Mode", "violate_1ms_wall_clock_restriction"):
                 raise ConfigurationException(
@@ -227,12 +193,6 @@ class AbstractSpiNNakerCommon(AbstractSpinnakerBase):
                 projection.mark_no_changes()
 
         return changed, data_changed
-
-    @property
-    def min_delay(self):
-        """ The minimum supported delay, in milliseconds.
-        """
-        return self.__min_delay
 
     def add_application_vertex(self, vertex):
         if isinstance(vertex, CommandSender):

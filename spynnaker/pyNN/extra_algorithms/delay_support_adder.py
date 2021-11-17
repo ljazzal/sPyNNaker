@@ -17,8 +17,7 @@ import math
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step_ms)
+from spinn_front_end_common.data import FecDataView
 from spynnaker.pyNN.exceptions import DelayExtensionException
 from spynnaker.pyNN.extra_algorithms.splitter_components import (
     AbstractSpynnakerSplitterDelay, SplitterDelayVertexSlice)
@@ -211,9 +210,9 @@ class DelaySupportAdder(object):
                 self.INVALID_SPLITTER_FOR_DELAYS_ERROR_MSG.format(
                     app_edge.post_vertex, post_splitter, app_edge))
 
+        time_step_ms = FecDataView().simulation_time_step_ms
         max_delay_steps = app_edge.post_vertex.splitter.max_support_delay()
-        max_delay_ms = max_delay_steps * machine_time_step_ms()
-
+        max_delay_ms = max_delay_steps * time_step_ms
         # if does not need a delay extension, run away
         if max_delay_ms >= max_delay_needed_ms:
             return 0, max_delay_steps, False
@@ -227,7 +226,7 @@ class DelaySupportAdder(object):
         # needs a delay extension, check can be supported with 1 delay
         # extension. coz we dont do more than 1 at the moment
         ext_provided_ms = (DelayExtensionVertex.get_max_delay_ticks_supported(
-                max_delay_steps) * machine_time_step_ms())
+                max_delay_steps) * time_step_ms)
         total_delay_ms = ext_provided_ms + max_delay_ms
         if total_delay_ms < max_delay_needed_ms:
             raise DelayExtensionException(
