@@ -12,6 +12,7 @@ typedef struct pre_trace_t {
 } pre_trace_t;
 
 typedef struct {
+    int32_t U;
     int32_t tau_f;
     int32_t tau_d;
     int32_t tau_syn;
@@ -89,7 +90,7 @@ static inline update_state_t timing_apply_pre_spike(
     log_info("z:%u, y:%u, x:%u, u:%u", z, previous_state.weight_region->y, previous_state.weight_region->x, previous_state.weight_region->u);
 
     // Update u
-    previous_state.weight_region->u += STDP_FIXED_MUL_16X16(previous_state.weight_region->U, STDP_FIXED_POINT_ONE - previous_state.weight_region->u);
+    previous_state.weight_region->u += STDP_FIXED_MUL_16X16(plasticity_trace_region_data.U, STDP_FIXED_POINT_ONE - previous_state.weight_region->u);
     log_info("z:%u, y:%u, x:%u, u:%u", z, previous_state.weight_region->y, previous_state.weight_region->x, previous_state.weight_region->u);
 
     // Weight update

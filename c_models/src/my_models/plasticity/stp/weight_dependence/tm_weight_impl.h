@@ -19,18 +19,19 @@ typedef struct {
     int32_t x;
     int32_t y;
     int32_t initial_weight;
-    int32_t U;
 } plasticity_weight_region_data_t;
 
 // An intermediate data structure; can have more accuracy and use more storage
 // than the variable structure e.g. weight might be 16-bit but stored as 32-bit
 // here
+// TODO: determine if intermediate data structure can help with accuracy
 typedef struct {
     int32_t weight;
     plasticity_weight_region_data_t *weight_region;
 } weight_state_t;
 
 // TODO: Ensure this includes and implements the correct interface
+// NOTE: Can probably do with base class
 #include <neuron/plasticity/stdp/weight_dependence/weight_one_term.h>
 
 // The external variables of the weight rule

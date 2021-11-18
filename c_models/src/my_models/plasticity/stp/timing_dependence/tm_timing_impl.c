@@ -4,6 +4,7 @@
 // Globals
 //---------------------------------------
 // Exponential lookup-tables
+// TODO: see if we can move to int32_lut for better accuracy
 //! Lookup table for &tau_f exponential decay
 int16_lut *tau_f_lookup;
 //! Lookup table for &tau_d exponential decay
@@ -16,6 +17,7 @@ plasticity_trace_region_data_t plasticity_trace_region_data;
 
 //! How the configuration data for TM is laid out in SDRAM.
 typedef struct {
+    int32_t U;
     int32_t tau_f;
     int32_t tau_d;
     int32_t tau_syn;
@@ -35,6 +37,7 @@ address_t timing_initialise(address_t address) {
     tm_config_t *config = (tm_config_t *) address;
 
     // Copy parameters
+    plasticity_trace_region_data.U = config->U;
     plasticity_trace_region_data.tau_f = config->tau_f;
     plasticity_trace_region_data.tau_d = config->tau_d;
     plasticity_trace_region_data.tau_syn = config->tau_syn;
