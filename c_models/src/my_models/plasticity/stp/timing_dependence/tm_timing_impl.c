@@ -4,7 +4,6 @@
 // Globals
 //---------------------------------------
 // Exponential lookup-tables
-// TODO: see if we can move to int32_lut for better accuracy
 //! Lookup table for &tau_f exponential decay
 int16_lut *tau_f_lookup;
 //! Lookup table for &tau_d exponential decay
@@ -46,9 +45,9 @@ address_t timing_initialise(address_t address) {
     // Copy LUTs from following memory
     address_t lut_address = config->lut_data;
     // address_t lut_address = address;
+    tau_syn_lookup = maths_copy_int16_lut(&lut_address);
     tau_f_lookup = maths_copy_int16_lut(&lut_address);
     tau_d_lookup = maths_copy_int16_lut(&lut_address);
-    tau_syn_lookup = maths_copy_int16_lut(&lut_address);
 
     log_info("timing_initialise: completed successfully");
 

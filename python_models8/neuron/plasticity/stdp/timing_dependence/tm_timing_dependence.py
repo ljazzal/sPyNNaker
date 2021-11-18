@@ -179,9 +179,8 @@ class TsodyksMarkramTimingDependence(AbstractTimingDependence):
     @overrides(AbstractTimingDependence.get_parameters_sdram_usage_in_bytes)
     def get_parameters_sdram_usage_in_bytes(self):
         # TODO: update to match the number of bytes used by the parameters
-        # NOTE: usage only for one set of parameters (doesn't matter which one we use below)
-        return (2 * BYTES_PER_WORD) * (len(self._tau_fac_f_data) +
-                len(self._tau_fac_d_data) + len(self._tau_syn_data))
+        # NOTE: usage for one set of parameters (5) and LUTs (3)
+        return self.NUM_PARAMETERS * BYTES_PER_WORD + (BYTES_PER_WORD) * (len(self._tau_fac_f_data) + len(self._tau_fac_d_data) + len(self._tau_syn_data))
 
     @property
     def n_weight_terms(self):
@@ -245,9 +244,9 @@ class TsodyksMarkramTimingDependence(AbstractTimingDependence):
         spec.write_value(data=fixed_point_delta_tau_inv, data_type=DataType.INT32)
 
         # Write lookup tables
+        spec.write_array(self._tau_syn_data)
         spec.write_array(lut_tau_f)
         spec.write_array(lut_tau_d)
-        spec.write_array(self._tau_syn_data)
 
     @overrides(AbstractTimingDependence.get_parameter_names)
     def get_parameter_names(self):
