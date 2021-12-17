@@ -15,6 +15,7 @@
 
 import math
 import numpy
+from enum import Enum
 from pyNN.standardmodels.synapses import StaticSynapse
 from spinn_utilities.overrides import overrides
 from spinn_front_end_common.abstract_models import AbstractChangableAfterRun
@@ -35,6 +36,15 @@ from .abstract_generate_on_machine import (
 # How large are the time-stamps stored with each event
 TIME_STAMP_BYTES = BYTES_PER_WORD
 
+# Hashes of the Tsodyks-Markram STP types
+class PlasticityTypes(Enum):
+    EXC_FAC_STP = 0
+    EXC_DEP_STP = 1
+    EXC_PSD_STP = 2
+    INH_FAC_STP = 3
+    INH_DEP_STP = 4
+    INH_PSD_STP = 5
+    N_STP = 6
 
 class SynapseDynamicsSTDP(
         AbstractPlasticSynapseDynamics, AbstractSettable,
@@ -108,10 +118,13 @@ class SynapseDynamicsSTDP(
     def merge(self, synapse_dynamics):
         # If dynamics is STDP, test if same as
         if isinstance(synapse_dynamics, SynapseDynamicsSTDP):
+            # TODO: go around single STDP dynamic limitation
             if not self.is_same_as(synapse_dynamics):
-                raise SynapticConfigurationException(
-                    "Synapse dynamics must match exactly when using multiple"
-                    " edges to the same population")
+                print("Synapse dynamics are not the same")
+            #     raise SynapticConfigurationException(
+            #         "Synapse dynamics must match exactly when using multiple"
+            #         " edges to the same population")
+                return synapse_dynamics
 
             # If STDP part matches, return the other, as it might also be
             # structural
@@ -551,3 +564,11 @@ class SynapseDynamicsSTDP(
     @overrides(AbstractPlasticSynapseDynamics.pad_to_length)
     def pad_to_length(self):
         return self.__pad_to_length
+
+    @property
+    def synapse_type_id(self):
+        """ The ID of the synapse type
+
+        :rtype: PlasticityTypes
+        """
+        return self.__timing_dependence.synapse_type.value

@@ -27,7 +27,7 @@
 //! \brief Initialise the timing dependence state (global) from SDRAM
 //! \param[in] address: Location in SDRAM of timing data
 //! \return address of first word after the timing data
-address_t timing_initialise(address_t address);
+address_t timing_initialise(address_t address, uint32_t synapse_index);
 
 //! \brief Get an initial post-synaptic timing trace
 //! \return the post trace

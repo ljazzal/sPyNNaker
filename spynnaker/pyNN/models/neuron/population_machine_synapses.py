@@ -184,12 +184,24 @@ class PopulationMachineSynapses(
         synapse_dynamics_sz = self._app_vertex.get_synapse_dynamics_size(
             self._vertex_slice)
         if synapse_dynamics_sz > 0:
+            # Get the number of synapse types
+            n_synapse_types = len(synapse_dynamics)
+
+            # Reserve space fot the number of synapse types
+            synapse_dynamics_sz += 4
             spec.reserve_memory_region(
                 region=self._synapse_regions.synapse_dynamics,
                 size=synapse_dynamics_sz, label='synapseDynamicsParams',
                 reference=self._synapse_references.synapse_dynamics)
-            synapse_dynamics.write_parameters(
-                spec, self._synapse_regions.synapse_dynamics, weight_scales)
+
+            # Write the number of synapse types
+            spec.switch_write_focus(self._synapse_regions.synapse_dynamics)
+            spec.write_value(n_synapse_types)
+
+            # Write the parameters for each synapse type in use
+            for syn_dynamics in synapse_dynamics.values():
+                syn_dynamics.write_parameters(
+                    spec, self._synapse_regions.synapse_dynamics, weight_scales)
         elif self._synapse_references.synapse_dynamics is not None:
             # If there is a reference for this region, we have to create it!
             spec.reserve_memory_region(

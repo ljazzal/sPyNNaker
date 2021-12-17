@@ -241,7 +241,7 @@ class AbstractPopulationVertex(
 
         # Prepare for dealing with STDP - there can only be one (non-static)
         # synapse dynamics per vertex at present
-        self.__synapse_dynamics = None
+        self.__synapse_dynamics = dict()
 
     @property
     def synapse_dynamics(self):
@@ -261,11 +261,13 @@ class AbstractPopulationVertex(
         :param AbstractSynapseDynamics synapse_dynamics:
             The synapse dynamics to set
         """
-        if self.__synapse_dynamics is None:
-            self.__synapse_dynamics = synapse_dynamics
+        if not self.__synapse_dynamics:
+            self.__synapse_dynamics[synapse_dynamics.synapse_type_id] = synapse_dynamics
         else:
-            self.__synapse_dynamics = self.__synapse_dynamics.merge(
-                synapse_dynamics)
+            last_idx = list(self.__synapse_dynamics)[-1]
+            new_synapse_dynamics = self.__synapse_dynamics[last_idx].merge(synapse_dynamics)
+            if new_synapse_dynamics.synapse_type_id not in self.__synapse_dynamics.keys():
+                self.__synapse_dynamics[new_synapse_dynamics.synapse_type_id] = new_synapse_dynamics
 
     def add_incoming_projection(self, projection):
         """ Add a projection incoming to this vertex
@@ -809,12 +811,13 @@ class AbstractPopulationVertex(
                 vertex.set_reload_required(True)
 
         # If synapses change during the run,
-        if (self.__synapse_dynamics is not None and
-                self.__synapse_dynamics.changes_during_run):
-            self.__change_requires_data_generation = True
-            for vertex in self.machine_vertices:
-                if isinstance(vertex, AbstractRewritesDataSpecification):
-                    vertex.set_reload_required(True)
+        if not self.__synapse_dynamics == False:
+            last = list(self.__synapse_dynamics.keys())[-1]
+            if self.__synapse_dynamics[last].changes_during_run:
+                self.__change_requires_data_generation = True
+                for vertex in self.machine_vertices:
+                    if isinstance(vertex, AbstractRewritesDataSpecification):
+                        vertex.set_reload_required(True)
 
     @staticmethod
     def _ring_buffer_expected_upper_bound(
@@ -1043,11 +1046,17 @@ class AbstractPopulationVertex(
             The slice of the vertex to get the usage of
         :rtype: int
         """
-        if self.__synapse_dynamics is None:
+        if not self.__synapse_dynamics:
             return 0
 
-        return self.__synapse_dynamics.get_parameters_sdram_usage_in_bytes(
+        # 32-bits for the number of STDP dynamics
+        sdram_usage = BYTES_PER_WORD
+
+        for syn_dynamics in self.__synapse_dynamics.values():
+            sdram_usage += syn_dynamics.get_parameters_sdram_usage_in_bytes(
             vertex_slice.n_atoms, self.__neuron_impl.get_n_synapse_types())
+
+        return sdram_usage
 
     def get_structural_dynamics_size(self, vertex_slice, incoming_projections):
         """ Get the size of the structural dynamics region
@@ -1057,9 +1066,10 @@ class AbstractPopulationVertex(
         :param list(~spynnaker.pyNN.models.Projection) incoming_projections:
             The projections to consider in the calculations
         """
-        if self.__synapse_dynamics is None:
+        if not self.__synapse_dynamics:
             return 0
 
+        # TODO: would need to iterate
         if not isinstance(
                 self.__synapse_dynamics, AbstractSynapseDynamicsStructural):
             return 0
@@ -1188,9 +1198,10 @@ class AbstractPopulationVertex(
 
         :rtype: str
         """
-        if self.__synapse_dynamics is None:
+        if not self.__synapse_dynamics:
             return ""
-        return self.__synapse_dynamics.get_vertex_executable_suffix()
+        last = list(self.__synapse_dynamics.keys())[-1]
+        return self.__synapse_dynamics[last].get_vertex_executable_suffix()
 
     @property
     def neuron_recordables(self):
@@ -1251,6 +1262,7 @@ class AbstractPopulationVertex(
 
         :rtype: int
         """
+        # TODO: would need to iterate
         if isinstance(self.__synapse_dynamics,
                       AbstractSynapseDynamicsStructural):
             self.__synapse_recorder.set_max_rewires_per_ts(
