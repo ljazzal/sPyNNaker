@@ -44,6 +44,15 @@ typedef struct stdp_params {
 //! Configuration parameters
 static stdp_params params;
 
+//! Parameters linked to multiplt plastic synapses to same population
+typedef struct stp_params {
+    //! The number of ST(D)P synapse types in use
+    uint32_t n_synapse_types;
+} stp_params;
+
+//! Configuration parameters
+static stp_params synapse_params;
+
 //! Count of pre-synaptic events relevant to plastic processing
 uint32_t num_plastic_pre_synaptic_events = 0;
 //! Count of times that the plastic math became saturated
@@ -249,23 +258,45 @@ static inline index_t sparse_axonal_delay(uint32_t x) {
 bool synapse_dynamics_initialise(
         address_t address, uint32_t n_neurons, uint32_t n_synapse_types,
         uint32_t *ring_buffer_to_input_buffer_left_shifts) {
-    stdp_params *sdram_params = (stdp_params *) address;
-    spin1_memcpy(&params, sdram_params, sizeof(stdp_params));
-    address = (address_t) &sdram_params[1];
+    // Get number of synapse types in use
+    stp_params *sdram_stp_params = (stp_params *) address;
+    spin1_memcpy(&synapse_params, sdram_stp_params, sizeof(stp_params));  
+    log_info("Number of synapse types: %u", sdram_stp_params->n_synapse_types);
+    address_t address_data = (address_t) &sdram_stp_params[2]; // check this does what you want
+    address = (address_t) &sdram_stp_params[1]; // check this does what you want
 
-    // Load timing dependence data
-    address_t weight_region_address = timing_initialise(address);
-    if (address == NULL) {
-        return false;
+
+    // Initialize timing dependence data structure
+    timing_initialise_data_structure(address_data, sdram_stp_params->n_synapse_types);
+
+    // Get backprop delay
+    // stdp_params *sdram_params = (stdp_params *) address;
+    // spin1_memcpy(&params, sdram_params, sizeof(stdp_params));
+    // log_info("Delay: %u", sdram_params->backprop_delay);
+    // address = (address_t) &sdram_params[1];
+
+    for (uint32_t s = 0; s < sdram_stp_params->n_synapse_types; s++) {
+        // Get backprop delay
+        stdp_params *sdram_params = (stdp_params *) address;
+        spin1_memcpy(&params, sdram_params, sizeof(stdp_params));
+        log_info("Delay: %u", sdram_params->backprop_delay);
+        address = (address_t) &sdram_params[1];
+
+        // Load timing dependence data
+        address = timing_initialise(address, s);
+        if (address == NULL) {
+            return false;
+        }
+
+        // Load weight dependence data
+        address = weight_initialise(
+                address, n_synapse_types,
+                ring_buffer_to_input_buffer_left_shifts);
+        if (address == NULL) {
+            return false;
+        }
     }
 
-    // Load weight dependence data
-    address_t weight_result = weight_initialise(
-            weight_region_address, n_synapse_types,
-            ring_buffer_to_input_buffer_left_shifts);
-    if (weight_result == NULL) {
-        return false;
-    }
 
     post_event_history = post_events_init_buffers(n_neurons);
     if (post_event_history == NULL) {

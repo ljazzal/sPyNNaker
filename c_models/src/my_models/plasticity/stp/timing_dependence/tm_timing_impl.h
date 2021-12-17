@@ -12,6 +12,7 @@ typedef struct pre_trace_t {
 } pre_trace_t;
 
 typedef struct {
+    uint32_t synapse_type_id;
     int32_t U;
     int32_t tau_f;
     int32_t tau_d;
@@ -58,7 +59,7 @@ static inline update_state_t timing_apply_pre_spike(
         uint32_t time, UNUSED pre_trace_t trace, uint32_t last_pre_time,
         UNUSED pre_trace_t last_pre_trace, UNUSED uint32_t last_post_time,
         UNUSED post_trace_t last_post_trace, update_state_t previous_state) {
-    extern plasticity_trace_region_data_t plasticity_trace_region_data;
+    extern plasticity_trace_region_data_t *plasticity_trace_region_data;
 
     // Record initial synapse weight (specified by user)
     if (last_pre_time == 0) {
@@ -66,18 +67,19 @@ static inline update_state_t timing_apply_pre_spike(
     }
 
     uint32_t time_since_last_pre = time - last_pre_time;
-    log_info("w_i:%u", previous_state.weight_region->initial_weight);
+    log_info("t:%u, w_i:%u", time, previous_state.weight_region->initial_weight);
 
     int32_t Puu = maths_lut_exponential_decay(time_since_last_pre, tau_f_lookup);
     int32_t Pyy = maths_lut_exponential_decay(time_since_last_pre, tau_syn_lookup);
     int32_t Pzz = maths_lut_exponential_decay(time_since_last_pre, tau_d_lookup);
-    log_info("Puu:%u, Pyy:%u, Pzz:%u", Puu, Pyy, Pzz);
+    // log_info("Puu:%u, Pyy:%u, Pzz:%u", Puu, Pyy, Pzz);
+    log_info("tau_f:%u, tau_d:%u, tau_syn:%u", plasticity_trace_region_data->tau_f, plasticity_trace_region_data->tau_d, plasticity_trace_region_data->tau_syn);
 
 
-    int32_t Pxy = STDP_FIXED_MUL_16X16((Pzz - STDP_FIXED_POINT_ONE), plasticity_trace_region_data.tau_d) - STDP_FIXED_MUL_16X16((Pyy - STDP_FIXED_POINT_ONE), plasticity_trace_region_data.tau_syn);
-    Pxy = STDP_FIXED_MUL_16X16(Pxy, plasticity_trace_region_data.delta_tau_inv);
+    int32_t Pxy = STDP_FIXED_MUL_16X16((Pzz - STDP_FIXED_POINT_ONE), plasticity_trace_region_data->tau_d) - STDP_FIXED_MUL_16X16((Pyy - STDP_FIXED_POINT_ONE), plasticity_trace_region_data->tau_syn);
+    Pxy = STDP_FIXED_MUL_16X16(Pxy, plasticity_trace_region_data->delta_tau_inv);
     int32_t Pxz = STDP_FIXED_POINT_ONE - Pzz;
-    log_info("Pxy:%u, Pxz:%u, delta_tau_inv:%u", Pxy, Pxz, plasticity_trace_region_data.tau_d);
+    log_info("Pxy:%u, Pxz:%u, delta_tau_inv:%u", Pxy, Pxz, plasticity_trace_region_data->tau_d);
 
     int32_t z = STDP_FIXED_POINT_ONE - previous_state.weight_region->x - previous_state.weight_region->y;
     log_info("z:%u, y:%u, x:%u, u:%u", z, previous_state.weight_region->y, previous_state.weight_region->x, previous_state.weight_region->u);
@@ -90,7 +92,7 @@ static inline update_state_t timing_apply_pre_spike(
     log_info("z:%u, y:%u, x:%u, u:%u", z, previous_state.weight_region->y, previous_state.weight_region->x, previous_state.weight_region->u);
 
     // Update u
-    previous_state.weight_region->u += STDP_FIXED_MUL_16X16(plasticity_trace_region_data.U, STDP_FIXED_POINT_ONE - previous_state.weight_region->u);
+    previous_state.weight_region->u += STDP_FIXED_MUL_16X16(plasticity_trace_region_data->U, STDP_FIXED_POINT_ONE - previous_state.weight_region->u);
     log_info("z:%u, y:%u, x:%u, u:%u", z, previous_state.weight_region->y, previous_state.weight_region->x, previous_state.weight_region->u);
 
     // Weight update
