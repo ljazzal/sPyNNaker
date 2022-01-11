@@ -36,15 +36,6 @@ from .abstract_generate_on_machine import (
 # How large are the time-stamps stored with each event
 TIME_STAMP_BYTES = BYTES_PER_WORD
 
-# Hashes of the Tsodyks-Markram STP types
-class PlasticityTypes(Enum):
-    EXC_FAC_STP = 0
-    EXC_DEP_STP = 1
-    EXC_PSD_STP = 2
-    INH_FAC_STP = 3
-    INH_DEP_STP = 4
-    INH_PSD_STP = 5
-    N_STP = 6
 
 class SynapseDynamicsSTDP(
         AbstractPlasticSynapseDynamics, AbstractSettable,

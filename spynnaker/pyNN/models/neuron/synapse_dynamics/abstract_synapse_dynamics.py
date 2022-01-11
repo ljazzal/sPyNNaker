@@ -15,9 +15,21 @@
 
 import math
 import numpy
+from enum import Enum
 from spinn_utilities.abstract_base import (
     AbstractBase, abstractmethod, abstractproperty)
 
+
+# Hashes of the Tsodyks-Markram STP types
+class PlasticityTypes(Enum):
+    STATIC = 0
+    EXC_FAC_STP = 1
+    EXC_DEP_STP = 2
+    EXC_PSD_STP = 3
+    INH_FAC_STP = 4
+    INH_DEP_STP = 5
+    INH_PSD_STP = 6
+    N_STP = 6
 
 class AbstractSynapseDynamics(object, metaclass=AbstractBase):
     """ How do the dynamics of a synapse interact with the rest of the model.

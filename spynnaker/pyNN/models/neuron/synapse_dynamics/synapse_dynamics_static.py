@@ -22,6 +22,7 @@ from spynnaker.pyNN.models.abstract_models import AbstractSettable
 from .abstract_static_synapse_dynamics import AbstractStaticSynapseDynamics
 from .abstract_generate_on_machine import (
     AbstractGenerateOnMachine, MatrixGeneratorID)
+from .abstract_synapse_dynamics import PlasticityTypes
 from spynnaker.pyNN.exceptions import InvalidParameterType
 from spynnaker.pyNN.utilities.utility_calls import get_n_bits
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
@@ -241,3 +242,11 @@ class SynapseDynamicsStatic(
     @overrides(AbstractStaticSynapseDynamics.pad_to_length)
     def pad_to_length(self):
         return self.__pad_to_length
+
+    @property
+    def synapse_type_id(self):
+        """ The ID of the synapse type
+
+        :rtype: PlasticityTypes
+        """
+        return PlasticityTypes.STATIC
